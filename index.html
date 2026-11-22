@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#05030f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Neon Star Defender</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <main class="shell" id="shell" aria-label="Neon Star Defender">
+      <canvas id="game" width="480" height="800" aria-label="Área de jogo. Use WASD ou setas para mover e espaço para atirar."></canvas>
+      <div class="scr-effect" aria-hidden="true"></div>
+
+      <div class="hud hidden" id="hud">
+        <div class="hud-top">
+          <div class="stat">
+            <span class="stat-label">PONTOS</span>
+            <span class="stat-value" id="score">0</span>
+          </div>
+          <div class="stat stat-center">
+            <span class="stat-label">ONDA</span>
+            <span class="stat-value" id="wave">1</span>
+          </div>
+          <div class="hud-right">
+            <div class="lives" id="lives" aria-label="Vidas restantes"></div>
+            <div class="hud-buttons">
+              <button class="icon-btn" id="hudSoundBtn" type="button" aria-label="Silenciar som" title="Som">♪</button>
+              <button class="icon-btn pause-btn" id="pauseBtn" type="button" aria-label="Pausar" title="Pausar"><span class="pause-icon" aria-hidden="true"><i></i><i></i></span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="powerups" id="powerups" aria-live="polite"></div>
+
+        <div class="bossbar hidden" id="bossbar">
+          <div class="bossbar-label"><span>NAVE-MÃE</span><span id="bossHpText">100%</span></div>
+          <div class="bossbar-track"><div class="bossbar-fill" id="bossHp"></div></div>
+        </div>
+
+        <div class="banner hidden" id="banner" aria-live="polite">
+          <span class="banner-title" id="bannerTitle"></span>
+          <span class="banner-sub" id="bannerSub"></span>
+        </div>
+      </div>
+
+      <section class="screen menu-screen" id="menuScreen">
+        <div class="menu-top">
+          <div class="kicker">ARCADE // SETOR 7</div>
+          <h1 class="logo" aria-label="Neon Star Defender">
+            <span class="logo-neon">NEON</span>
+            <span class="logo-star">STAR</span>
+            <span class="logo-def">DEFENDER</span>
+          </h1>
+          <p class="tagline">A última fronteira brilha em neon.</p>
+        </div>
+
+        <div class="menu-mid">
+          <div class="best-badge">
+            <span>MELHOR PONTUAÇÃO</span>
+            <strong id="menuBest">000000</strong>
+          </div>
+          <nav class="menu-actions" aria-label="Menu principal">
+            <button class="btn btn-primary" id="playBtn" type="button">JOGAR</button>
+            <button class="btn" id="howtoBtn" type="button">COMO JOGAR</button>
+            <button class="btn" id="recordsBtn" type="button">RECORDES</button>
+          </nav>
+        </div>
+
+        <div class="menu-footer">
+          <button class="btn btn-ghost btn-small" id="soundBtn" type="button">SOM: LIGADO</button>
+          <span class="version">v1.0 · HTML5</span>
+        </div>
+      </section>
+
+      <section class="screen panel-screen hidden" id="howtoScreen">
+        <div class="panel-head">
+          <h2 class="screen-title">COMO JOGAR</h2>
+          <p class="screen-sub">Sobreviva às ondas. A cada 5 ondas, uma nave-mãe aparece.</p>
+        </div>
+        <div class="scroll-panel">
+          <div class="info-card">
+            <h3>COMPUTADOR</h3>
+            <p><b>WASD</b> ou <b>setas</b> movem a nave.<br><b>ESPAÇO</b> atira. <b>ESC</b> pausa.</p>
+          </div>
+          <div class="info-card">
+            <h3>CELULAR</h3>
+            <p>Arraste o dedo pela área de jogo para mover.<br>O tiro é automático. Use o botão <b>❚❚</b> para pausar.</p>
+          </div>
+          <div class="info-card">
+            <h3>INIMIGOS</h3>
+            <ul class="enemy-list">
+              <li><span class="dot dot-pink"></span><b>Batedor</b> — desce em linha reta.</li>
+              <li><span class="dot dot-purple"></span><b>Serpente</b> — avança em zigue-zague.</li>
+              <li><span class="dot dot-orange"></span><b>Atirador</b> — mira e dispara na sua direção.</li>
+            </ul>
+          </div>
+          <div class="info-card">
+            <h3>MELHORIAS TEMPORÁRIAS</h3>
+            <ul class="enemy-list">
+              <li><span class="pick pick-shield">S</span><b>Escudo</b> — absorve um impacto.</li>
+              <li><span class="pick pick-double">2</span><b>Tiro duplo</b> — dois projéteis por disparo.</li>
+              <li><span class="pick pick-rapid">R</span><b>Disparo rápido</b> — cadência acelerada.</li>
+            </ul>
+          </div>
+          <div class="info-card">
+            <h3>CHEFES</h3>
+            <p>A nave-mãe alterna entre <b>leque de projéteis</b> e <b>rajada radial</b>. Fique longe do centro e deslize pelas brechas.</p>
+          </div>
+          <p class="small-note">Os 5 melhores recordes ficam salvos neste navegador.</p>
+        </div>
+        <div class="panel-actions">
+          <button class="btn btn-primary" id="howtoBackBtn" type="button">VOLTAR</button>
+        </div>
+      </section>
+
+      <section class="screen panel-screen hidden" id="recordsScreen">
+        <div class="panel-head">
+          <h2 class="screen-title">RECORDES</h2>
+          <p class="screen-sub">Os cinco melhores pilotos deste navegador.</p>
+        </div>
+        <ol class="records-list" id="recordsList"></ol>
+        <div class="panel-actions">
+          <button class="btn btn-primary" id="recordsBackBtn" type="button">VOLTAR</button>
+        </div>
+      </section>
+
+      <section class="screen overlay-screen hidden" id="pauseScreen">
+        <h2 class="screen-title">PAUSA</h2>
+        <p class="screen-sub">A batalha espera por você.</p>
+        <div class="menu-actions compact">
+          <button class="btn btn-primary" id="resumeBtn" type="button">CONTINUAR</button>
+          <button class="btn" id="restartBtn" type="button">REINICIAR</button>
+          <button class="btn" id="pauseSoundBtn" type="button">SOM: LIGADO</button>
+          <button class="btn btn-ghost" id="pauseMenuBtn" type="button">MENU</button>
+        </div>
+      </section>
+
+      <section class="screen overlay-screen hidden" id="gameoverScreen">
+        <p class="kicker danger">SINAL PERDIDO</p>
+        <h2 class="screen-title gameover-title">FIM DE JOGO</h2>
+        <div class="final-score">
+          <span>PONTUAÇÃO FINAL</span>
+          <strong id="finalScore">0</strong>
+          <span id="recordNotice" class="record-notice"></span>
+        </div>
+        <div class="menu-actions compact">
+          <button class="btn btn-primary" id="retryBtn" type="button">JOGAR NOVAMENTE</button>
+          <button class="btn" id="gameoverMenuBtn" type="button">VOLTAR AO MENU</button>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
