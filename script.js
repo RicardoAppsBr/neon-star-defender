@@ -133,7 +133,7 @@
     if (!iso) return '';
     const date = new Date(iso);
     if (Number.isNaN(date.getTime())) return '';
-    return date.toLocaleDateString('pt-BR');
+    return date.toLocaleDateString('en-US');
   }
 
   function refreshMenuBest() {
@@ -146,7 +146,7 @@
     if (!list.length) {
       const empty = document.createElement('li');
       empty.className = 'empty-records';
-      empty.innerHTML = '<span class="big">···</span><span>Nenhum recorde ainda.<br>Entre na arena e marque seu nome.</span>';
+      empty.innerHTML = '<span class="big">···</span><span>No high scores yet.<br>Enter the arena and make your mark.</span>';
       dom.recordsList.appendChild(empty);
       return;
     }
@@ -160,7 +160,7 @@
       meta.className = 'record-meta';
       const label = document.createElement('span');
       label.className = 'record-label';
-      label.textContent = index === 0 ? 'MELHOR PILOTO' : 'PILOTO';
+      label.textContent = index === 0 ? 'TOP PILOT' : 'PILOT';
       const date = document.createElement('span');
       date.className = 'record-date';
       date.textContent = formatDate(entry.date) || '—';
@@ -314,12 +314,12 @@
   };
 
   function updateSoundUI() {
-    const label = audio.muted ? 'SOM: DESLIGADO' : 'SOM: LIGADO';
+    const label = audio.muted ? 'SOUND: OFF' : 'SOUND: ON';
     dom.soundBtn.textContent = label;
     dom.pauseSoundBtn.textContent = label;
     dom.hudSoundBtn.textContent = audio.muted ? '×' : '♪';
-    dom.hudSoundBtn.setAttribute('aria-label', audio.muted ? 'Ativar som' : 'Silenciar som');
-    dom.hudSoundBtn.title = audio.muted ? 'Ativar som' : 'Silenciar som';
+    dom.hudSoundBtn.setAttribute('aria-label', audio.muted ? 'Enable sound' : 'Mute sound');
+    dom.hudSoundBtn.title = audio.muted ? 'Enable sound' : 'Mute sound';
   }
 
   function setMuted(muted, withSound = false) {
@@ -625,9 +625,9 @@
   }
 
   const powerMeta = {
-    shield: { label: 'ESCUDO', icon: 'S', className: 'shield' },
-    double: { label: 'TIRO DUPLO', icon: '2', className: 'double' },
-    rapid: { label: 'DISPARO RÁPIDO', icon: 'R', className: 'rapid' }
+    shield: { label: 'SHIELD', icon: 'S', className: 'shield' },
+    double: { label: 'DOUBLE SHOT', icon: '2', className: 'double' },
+    rapid: { label: 'RAPID FIRE', icon: 'R', className: 'rapid' }
   };
 
   function updatePowerHUD() {
@@ -769,9 +769,9 @@
   }
 
   function waveSubtitle(n) {
-    if (n === 1) return 'PREPARE-SE, PILOTO';
-    if (n % 5 === 4) return 'ALGO GRANDE SE APROXIMA';
-    return 'INVASORES EM ROTA';
+    if (n === 1) return 'GET READY, PILOT';
+    if (n % 5 === 4) return 'SOMETHING BIG IS COMING';
+    return 'INCOMING INVADERS';
   }
 
   function buildWaveQueue(n) {
@@ -803,13 +803,13 @@
     if (n % 5 === 0) {
       state.waveInfo.bossPending = true;
       state.waveInfo.bossTimer = 2.2;
-      showBanner('ALERTA', 'NAVE-MÃE DETECTADA', true, 2.2);
+      showBanner('WARNING', 'MOTHERSHIP DETECTED', true, 2.2);
       Sound.alarm();
       return;
     }
     state.waveInfo.spawnQueue = buildWaveQueue(n);
     state.waveInfo.spawnTimer = 1.1;
-    showBanner('ONDA ' + String(n).padStart(2, '0'), waveSubtitle(n), false, 1.6);
+    showBanner('WAVE ' + String(n).padStart(2, '0'), waveSubtitle(n), false, 1.6);
     Sound.waveStart();
   }
 
@@ -871,7 +871,7 @@
       wi.cleared = true;
       const bonus = 120 * state.wave;
       addPoints(bonus);
-      showBanner('ONDA LIMPA', '+' + bonus + ' BÔNUS', false, 1.6);
+      showBanner('WAVE CLEARED', '+' + bonus + ' BONUS', false, 1.6);
       Sound.waveClear();
       wi.clearTimer = 1.9;
     }
@@ -1164,7 +1164,7 @@
   function onBossDefeated(boss) {
     const bonus = 1000 + state.wave * 250;
     addPoints(bonus);
-    showBanner('NAVE-MÃE DESTRUÍDA', '+' + bonus + ' BÔNUS', false, 2.1);
+    showBanner('MOTHERSHIP DESTROYED', '+' + bonus + ' BONUS', false, 2.1);
     explode(boss.x, boss.y, 44, null, true);
     Sound.bossDown();
     spawnPickup('shield', boss.x - 44, boss.y + 20);
@@ -1329,7 +1329,7 @@
 
   function applyPickup(type) {
     state.power[type] = 12;
-    const labels = { shield: 'ESCUDO ATIVO', double: 'TIRO DUPLO', rapid: 'DISPARO RÁPIDO' };
+    const labels = { shield: 'SHIELD ACTIVE', double: 'DOUBLE SHOT', rapid: 'RAPID FIRE' };
     const colors = { shield: '#6dffc0', double: '#ff9ecb', rapid: '#cfb1ff' };
     const p = state.player;
     addFloater(labels[type], p.x, p.y - 46, colors[type], 14);
@@ -1349,7 +1349,7 @@
       p.shieldFlash = 0.4;
       state.flash = 0.24;
       state.flashColor = '#6dffc0';
-      addFloater('ESCUDO QUEBRADO', p.x, p.y - 40, '#6dffc0', 13);
+      addFloater('SHIELD BROKEN', p.x, p.y - 40, '#6dffc0', 13);
       explode(p.x, p.y, 22, '#6dffc0', false);
       Sound.shieldBreak();
       return;
@@ -1373,7 +1373,7 @@
     }
     if (state.lives <= 0) {
       state.pendingOver = 1.15;
-      showBanner('NAVE DESTRUÍDA', 'SINAL PERDIDO', true, 1.2);
+      showBanner('SHIP DESTROYED', 'SIGNAL LOST', true, 1.2);
     }
   }
 
@@ -1384,13 +1384,13 @@
     const placement = addRecord(state.score);
     dom.finalScore.textContent = padScore(state.score);
     if (placement === 1) {
-      dom.recordNotice.textContent = 'NOVO RECORDE!';
+      dom.recordNotice.textContent = 'NEW HIGH SCORE!';
       Sound.record();
     } else if (placement > 0) {
-      dom.recordNotice.textContent = 'VOCÊ ENTROU NO TOP 5 · #' + placement;
+      dom.recordNotice.textContent = 'YOU MADE THE TOP 5 · #' + placement;
       Sound.record();
     } else {
-      dom.recordNotice.textContent = 'CONTINUE TENTANDO, PILOTO';
+      dom.recordNotice.textContent = 'KEEP TRYING, PILOT';
     }
     setHudVisible(false);
     dom.bossbar.classList.add('hidden');
