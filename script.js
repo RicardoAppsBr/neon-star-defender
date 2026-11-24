@@ -53,16 +53,21 @@
     retryBtn: $('retryBtn'),
     gameoverMenuBtn: $('gameoverMenuBtn')
   };
-  const screens = [dom.menuScreen, dom.howtoScreen, dom.recordsScreen, dom.pauseScreen, dom.gameoverScreen, $('hangarScreen')];
+  const screens = [dom.menuScreen, dom.howtoScreen, dom.recordsScreen, dom.pauseScreen, dom.gameoverScreen, $('hangarScreen'), $('achScreen')];
 
   const fleet = [{name:'VANGUARD',cost:0,desc:'Balanced fighter',speed:345,rate:0.145,damage:1,tint:'#3df6ff'},{name:'PHANTOM',cost:60,desc:'Fast interceptor • rapid fire',speed:440,rate:0.105,damage:1,tint:'#ff68db'},{name:'TITAN',cost:140,desc:'Heavy fighter • double damage',speed:285,rate:0.19,damage:2,tint:'#ffbd55'}];
+  fleet.push({name:'NOVA',cost:220,desc:'Twin plasma cannons',speed:360,rate:.17,damage:1,tint:'#78ffb8'},{name:'ECLIPSE',cost:340,desc:'Triple spread cannon',speed:330,rate:.22,damage:1,tint:'#a99aff'},{name:'SOLARIS',cost:500,desc:'Heavy twin pulse',speed:300,rate:.24,damage:2,tint:'#ff8055'});
   const profileKey = 'neonstar.profile.v3';
   let profile = {credits:0,owned:[0],selected:0};
-  try { const v=JSON.parse(localStorage.getItem(profileKey)); if(v && Number.isFinite(v.credits) && Array.isArray(v.owned)) { profile={credits:Math.max(0,Math.floor(v.credits)),owned:[0,...v.owned.filter(i=>i===1||i===2)],selected:0}; if(profile.owned.includes(v.selected)) profile.selected=v.selected; } } catch(e){}
+  try { const v=JSON.parse(localStorage.getItem(profileKey)); if(v && Number.isFinite(v.credits) && Array.isArray(v.owned)) { profile={credits:Math.max(0,Math.floor(v.credits)),owned:[0,...v.owned.filter(i=>Number.isInteger(i)&&i>0&&i<fleet.length)],selected:0}; if(profile.owned.includes(v.selected)) profile.selected=v.selected; } } catch(e){}
   function saveProfile(){try{localStorage.setItem(profileKey,JSON.stringify(profile));}catch(e){}}
   function earn(n){profile.credits+=n;saveProfile();}
-  function hangar(){state.mode='hangar';showScreen($('hangarScreen'));$('credits').textContent=profile.credits+' CREDITS • Earn credits by defeating enemies';const list=$('shipList');list.replaceChildren();fleet.forEach((ship,i)=>{const card=document.createElement('div');card.className='info-card ship-card';const title=document.createElement('h3');title.textContent=ship.name;title.style.color=ship.tint;const desc=document.createElement('p');desc.textContent=ship.desc;const b=document.createElement('button');b.className='btn btn-small';b.textContent=profile.selected===i?'EQUIPPED':profile.owned.includes(i)?'EQUIP':'UNLOCK • '+ship.cost;b.disabled=profile.selected===i||(!profile.owned.includes(i)&&profile.credits<ship.cost);b.onclick=()=>{if(!profile.owned.includes(i)){if(profile.credits<ship.cost)return;profile.credits-=ship.cost;profile.owned.push(i);}profile.selected=i;saveProfile();hangar();};card.append(title,desc,b);list.append(card);});}
+  function hangar(){state.mode='hangar';showScreen($('hangarScreen'));$('credits').textContent=profile.credits+' CREDITS • Earn credits by defeating enemies';const list=$('shipList');list.replaceChildren();fleet.forEach((ship,i)=>{const card=document.createElement('div');card.className='info-card ship-card';const title=document.createElement('h3');title.textContent=ship.name;title.style.color=ship.tint;const desc=document.createElement('p');desc.textContent=ship.desc;const b=document.createElement('button');b.className='btn btn-small';b.textContent=profile.selected===i?'EQUIPPED':profile.owned.includes(i)?'EQUIP':'UNLOCK • '+ship.cost;b.disabled=profile.selected===i||(!profile.owned.includes(i)&&profile.credits<ship.cost);b.onclick=()=>{if(!profile.owned.includes(i)){if(profile.credits<ship.cost)return;profile.credits-=ship.cost;profile.owned.push(i);}profile.selected=i;saveProfile();hangar();};const preview=document.createElement('canvas');preview.width=96;preview.height=96;preview.className='ship-preview';const pc=preview.getContext('2d');pc.imageSmoothingEnabled=false;pc.drawImage(shipArt[i].canvas,12,12,72,72);card.append(preview,title,desc,b);list.append(card);});}
   $('hangarBtn').onclick=hangar; $('hangarBack').onclick=()=>goMenu();
+  let progress={kills:0,bosses:0,wave:0};try{Object.assign(progress,JSON.parse(localStorage.getItem('nsd31.progress')||'{}'));}catch(e){}
+  function saveProgress(){try{localStorage.setItem('nsd31.progress',JSON.stringify(progress));}catch(e){}}
+  $('achBtn').onclick=()=>{state.mode='achievements';showScreen($('achScreen'));const list=$('achList');list.replaceChildren();for(const [name,key,steps] of [['Enemy hunter','kills',[10,25,50,100,200,350,500,750,1000,2000]],['Boss breaker','bosses',[1,2,3,5,8,10,15,20,30,50]],['Explorer','wave',[2,3,5,8,10,15,20,25,30,50]]])for(const n of steps){const d=document.createElement('div');d.className='info-card';d.textContent=(progress[key]>=n?'✓ ':'○ ')+name+' '+n+' — '+Math.min(progress[key],n)+'/'+n;list.append(d);}};
+  $('achBack').onclick=()=>goMenu();
   const sectors=['ORION GATE','CRIMSON RIFT','FROZEN NEBULA','VOID FRONTIER'];
   let combo=0,comboTime=0,runCredits=0,musicClock=0,musicStep=0;
   function updateRunStats(){const t=$('runStats');const label='×'+(1+Math.min(4,Math.floor(combo/4)))+' COMBO  •  +'+runCredits+' CR  •  '+sectors[Math.floor((state.wave-1)/5)%4];if(t.textContent!==label)t.textContent=label;}
@@ -486,6 +491,8 @@
     return { canvas: output, w: width, h: height };
   }
   sprites.boss = makeBossSprite();
+  const shipArt=fleet.map((ship,i)=>{const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');g.translate(32,32);const poly=(pts,col)=>{g.fillStyle=col;g.beginPath();pts.forEach(([x,y],n)=>n?g.lineTo(x,y):g.moveTo(x,y));g.closePath();g.fill();};const wings=[[[0,-28],[12,-5],[29,22],[10,15],[0,24],[-10,15],[-29,22],[-12,-5]],[[0,-30],[8,-8],[30,-20],[23,20],[0,12],[-23,20],[-30,-20],[-8,-8]],[[0,-25],[20,-17],[28,20],[12,27],[-12,27],[-28,20],[-20,-17]],[[0,-28],[14,-12],[30,0],[25,25],[8,16],[-8,16],[-25,25],[-30,0],[-14,-12]],[[0,-28],[29,-5],[18,25],[0,14],[-18,25],[-29,-5]],[[0,-30],[13,-14],[29,-12],[29,25],[0,18],[-29,25],[-29,-12],[-13,-14]]];poly(wings[i],'#15233f');g.scale(.88,.88);poly(wings[i],ship.tint);poly([[0,-27],[9,1],[7,19],[-7,19],[-9,1]],'#e4f5ff');poly([[0,-18],[6,-3],[0,7],[-6,-3]],'#17456d');g.fillStyle='#fff';g.fillRect(-2,-12,3,7);g.fillStyle=ship.tint;g.fillRect(-12,19,5,8);g.fillRect(7,19,5,8);return {canvas:c,w:64,h:64};});
+  const bossArt=Array.from({length:5},(_,i)=>{const c=document.createElement('canvas');c.width=160;c.height=100;const g=c.getContext('2d');const colors=['#f455a5','#ff704d','#6deaff','#b58aff','#f8ce62'];g.translate(80,50);g.fillStyle='#17213e';g.beginPath();g.moveTo(0,-46);g.lineTo(24,-30);g.lineTo(72,-42+i*13);g.lineTo(78,18);g.lineTo(40,38);g.lineTo(0,46);g.lineTo(-40,38);g.lineTo(-78,18);g.lineTo(-72,-42+i*13);g.lineTo(-24,-30);g.closePath();g.fill();g.strokeStyle=colors[i];g.lineWidth=4;g.stroke();for(const side of [-1,1]){g.fillStyle=colors[i];g.fillRect(side*42-12,-12,24,9);g.fillStyle='#8396bd';g.fillRect(side*49-9,5,18,20);g.fillStyle='#ff9c45';g.fillRect(side*49-5,25,10,8);}g.fillStyle=colors[i];g.beginPath();g.arc(0,0,17+i*2,0,TAU);g.fill();g.fillStyle='#fff';g.fillRect(-8,-8,16,16);return {canvas:c,w:160,h:100};});
 
   function drawSprite(sprite, x, y, worldWidth, alpha = 1) {
     const worldHeight = worldWidth * (sprite.h / sprite.w);
@@ -711,6 +718,7 @@
     return { x: W / 2, y: H - 108, r: 9, cool: 0, invuln: 0, shieldFlash: 0 };
   }
 
+  function difficulty(){return Number($('difficulty').value)||1;}
   function resetGame() {
     combo=0;comboTime=0;runCredits=0;musicClock=0;musicStep=0;
     state.score = 0;
@@ -754,7 +762,7 @@
     showScreen(null);
     setHudVisible(true);
     startWave(1);
-    state.power.shield=8;
+    state.power.shield=difficulty()===.8?14:difficulty()===1.25?4:8;
     updateRunStats();
     Sound.start();
   }
@@ -804,7 +812,7 @@
   }
 
   function startWave(n) {
-    state.wave = n;
+    state.wave = n;progress.wave=Math.max(progress.wave,n);saveProgress();
     updateRunStats();
     updateWaveHUD();
     state.waveInfo = {
@@ -982,7 +990,7 @@
     const p = state.player;
     if (!p) return;
     const offset = state.power.double > 0 ? 9 : 0;
-    const shots = offset ? [-offset, offset] : [0];
+    const shots = profile.selected===4 ? [-13,0,13] : profile.selected>=3 ? [-10,10] : offset ? [-offset, offset] : [0];
     for (const dx of shots) {
       state.bullets.push({ x: p.x + dx, y: p.y - 20, vy: -880, r: 4, dmg: fleet[profile.selected].damage });
       for (let i = 0; i < 2; i++) {
@@ -1118,12 +1126,13 @@
   }
 
   function spawnBoss() {
-    const maxHp = 70 + state.wave * 8;
+    const maxHp = Math.round((70 + state.wave * 8)*difficulty());
+    document.querySelector('.bossbar-label span').textContent=['MOTHERSHIP','INFERNO','GLACIER','WRAITH','SUN EATER'][(Math.floor(state.wave/5)-1+5)%5];
     state.boss = {
       x: W / 2, y: -110, targetY: 225, age: 0, t: 0,
       hp: maxHp, maxHp, r: 58, entering: true, dead: false,
       deathTimer: 0, flash: 0, telegraph: false, shootTimer: 2.3,
-      pattern: 0, hurtFlash: 0
+      pattern: (Math.floor(state.wave/5)-1)%3, hurtFlash: 0
     };
     dom.bossbar.classList.remove('hidden');
     dom.bossHp.style.width = '100%';
@@ -1178,7 +1187,7 @@
 
   function onBossDefeated(boss) {
     const bonus = 1000 + state.wave * 250;
-    earn(15);runCredits+=15;
+    earn(15);runCredits+=15;progress.bosses++;saveProgress();
     addPoints(bonus);
     showBanner('MOTHERSHIP DESTROYED', '+' + bonus + ' BONUS', false, 2.1);
     explode(boss.x, boss.y, 44, null, true);
@@ -1233,11 +1242,11 @@
 
   function killEnemy(enemy) {
     enemy.dead = true;
-    combo++;comboTime=3.5;earn(1);runCredits++;
+    combo++;comboTime=3.5;earn(1);runCredits++; progress.kills++; saveProgress();
     const multiplier=1+Math.min(4,Math.floor(combo/4));
     addPoints(enemy.score*multiplier);
     addFloater('+' + enemy.score*multiplier, enemy.x, enemy.y - 12, '#b9fdff', 13);
-    explode(enemy.x, enemy.y, enemy.type === 'gunner' ? 20 : 13);
+    explode(enemy.x, enemy.y, enemy.type === 'gunner' ? 28 : 19);addRing(enemy.x,enemy.y,'#ffb96a',32,.3);
     Sound.explode();
     const wi = state.waveInfo;
     if (wi) {
@@ -1509,7 +1518,7 @@
     ctx.fillStyle = 'rgba(255,224,102,.9)';
     ctx.fillRect(Math.round(p.x - 2), Math.round(p.y + 15), 4, Math.round(6 + flicker * 7));
     ctx.restore();
-    drawSprite(sprites.player, p.x, p.y, 38);
+    drawSprite(shipArt[profile.selected], p.x, p.y, 48);
     if (state.power.shield > 0) {
       const pulse = 1 + Math.sin(state.time * 8) * 0.05;
       ctx.save();
@@ -1592,7 +1601,7 @@
     drawGlow(boss.x, boss.y - 6, 34, 'rgba(61,246,255,.6)', 0.5);
     ctx.restore();
     const flicker = boss.dead && Math.floor(boss.deathTimer * 18) % 2 === 0;
-    drawSprite(sprites.boss, boss.x, boss.y, 160, flicker ? 0.5 : 1);
+    drawSprite(bossArt[(Math.floor(state.wave/5)-1+5)%5], boss.x, boss.y, 160, flicker ? 0.5 : 1);
   }
 
   function drawPickups() {
@@ -1669,6 +1678,7 @@
       ctx.translate(rand(-state.shake, state.shake), rand(-state.shake, state.shake));
     }
     ctx.drawImage(background, 0, 0);
+    const orbit=(state.menuTime*5+state.time*8)%1100;const px=state.wave%2?385:85;const py=orbit-150;ctx.save();ctx.globalAlpha=.55;const pg=ctx.createRadialGradient(px-35,py-40,4,px,py,110);pg.addColorStop(0,['#8d91ff','#ff9470','#a8eaff','#d7a1ff'][Math.floor((state.wave-1)/5)%4]);pg.addColorStop(1,'#10112c');ctx.fillStyle=pg;ctx.beginPath();ctx.arc(px,py,110,0,TAU);ctx.fill();ctx.strokeStyle='#8393ca';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(px,py,140,28,-.3,0,TAU);ctx.stroke();ctx.restore();
     const sector=Math.floor((state.wave-1)/5)%4;
     if(sector){ctx.fillStyle=['transparent','rgba(150,20,30,.19)','rgba(0,130,180,.17)','rgba(100,20,170,.22)'][sector];ctx.fillRect(0,0,W,H);}
     if(state.player && state.mode==='playing'){ctx.strokeStyle=fleet[profile.selected].tint;ctx.globalAlpha=.32;ctx.beginPath();ctx.arc(state.player.x,state.player.y,23,0,TAU);ctx.stroke();ctx.globalAlpha=1;}
@@ -1686,7 +1696,7 @@
         ctx.globalCompositeOperation = 'lighter';
         drawGlow(W / 2, 688 + bob, 46, 'rgba(61,246,255,.6)', 0.4);
         ctx.restore();
-        drawSprite(sprites.player, W / 2, 688 + bob, 44);
+        drawSprite(shipArt[profile.selected], W / 2, 688 + bob, 80);
       }
     }
     ctx.restore();
@@ -1901,7 +1911,7 @@
   }
 
   window.NSD = {
-    version: '3.0.0',
+    version: '3.1.0',
     get snapshot() { return snapshot(); },
     start: startGame,
     pause: pauseGame,

@@ -538,3 +538,5 @@ body{
 .ship-card{display:grid;gap:calc(var(--u)*10);margin-bottom:calc(var(--u)*12)}
 .ship-card .btn:disabled{opacity:.45;cursor:default}
 .btn:focus-visible{outline:2px solid #fff;outline-offset:-4px}
+
+.ship-preview{width:64px;height:64px;float:right;image-rendering:pixelated}.difficulty-label{display:flex;justify-content:space-between;align-items:center;color:#b9fdff;font-size:calc(var(--u)*13);letter-spacing:1px}.difficulty-label select{background:#17142f;color:#fff;border:1px solid #7361b0;padding:5px;border-radius:4px}.menu-actions{gap:calc(var(--u)*7)}.menu-screen .logo{filter:drop-shadow(0 0 14px #532c9d)}

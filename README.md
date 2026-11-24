@@ -21,3 +21,13 @@ Hospede os três arquivos estáticos em HTTPS (por exemplo, GitHub Pages, em um 
 
 ## Limites
 Sem anúncios, SDK CrazyGames, compras reais, servidor ou ranking online. Música e efeitos sintetizados por código. As naves usam o sprite existente com diferenças de atributos e indicador de cor. Setores usam variações de cor do cenário. A ajuda e as dicas iniciais não constituem tutorial interativo completo. A sintaxe JS foi verificada com Node; o navegador automatizado bloqueou a abertura local, portanto testes de execução ainda precisam ser feitos. Não há garantia de aprovação. Consulte a política de reenvio antes de submeter e grave novas prévias reais.
+
+## 3.1 Ultimate Edition
+- Seis naves com silhuetas próprias e três novas opções de disparo.
+- Cinco aparências de chefe, com padrão inicial alternado; planeta em movimento, efeitos de explosão reforçados.
+- 30 marcos de carreira (abates, chefes e ondas), salvos localmente.
+- Dificuldade altera vida dos chefes e duração do escudo inicial. Recordes continuam compartilhados entre dificuldades.
+- Mantém a chave de perfil da versão 3.0; progresso depende da mesma origem e navegador.
+- Interface em inglês. Tutorial interativo, missões independentes, tradução completa e SDK não incluídos.
+- Testes: sintaxe JS e execução em Chromium com HTML/CSS/JS injetados: menu, seis naves, 30 conquistas, início, pausa e retomada sem erros observados. Navegação direta bloqueada pelo ambiente; teste em aparelho real e partida longa ainda necessários.
+- Para instalar: extraia o ZIP e abra index.html; para GitHub Pages substitua index.html, style.css e script.js no mesmo repositório, mantendo backup da versão anterior. Não apague dados do navegador.

@@ -66,20 +66,20 @@
             <strong id="menuBest">000000</strong>
           </div>
           <nav class="menu-actions" aria-label="Main menu">
-            <button class="btn btn-primary" id="playBtn" type="button">PLAY</button>
+            <label class="difficulty-label">DIFFICULTY <select id="difficulty"><option value="0.8">EASY</option><option value="1" selected>NORMAL</option><option value="1.25">HARD</option></select></label><button class="btn btn-primary" id="playBtn" type="button">PLAY</button>
             <button class="btn" id="hangarBtn" type="button">HANGAR</button>
             <button class="btn" id="howtoBtn" type="button">HOW TO PLAY</button>
-            <button class="btn" id="recordsBtn" type="button">HIGH SCORES</button>
+            <button class="btn" id="achBtn" type="button">ACHIEVEMENTS</button><button class="btn" id="recordsBtn" type="button">HIGH SCORES</button>
           </nav>
         </div>
 
         <div class="menu-footer">
           <button class="btn btn-ghost btn-small" id="soundBtn" type="button">SOUND: ON</button>
-          <span class="version">v3.0 · PROFESSIONAL EDITION</span>
+          <span class="version">v3.1 · ULTIMATE EDITION</span>
         </div>
       </section>
 
-      <section class="screen panel-screen hidden" id="hangarScreen"><div class="panel-head"><h2 class="screen-title">HANGAR</h2><p id="credits" class="screen-sub"></p></div><div class="scroll-panel" id="shipList"></div><div class="panel-actions"><button class="btn btn-primary" id="hangarBack">BACK</button></div></section>
+      <section class="screen panel-screen hidden" id="achScreen"><div class="panel-head"><h2 class="screen-title">ACHIEVEMENTS</h2><p class="screen-sub">30 career milestones</p></div><div class="scroll-panel" id="achList"></div><div class="panel-actions"><button class="btn btn-primary" id="achBack">BACK</button></div></section><section class="screen panel-screen hidden" id="hangarScreen"><div class="panel-head"><h2 class="screen-title">HANGAR</h2><p id="credits" class="screen-sub"></p></div><div class="scroll-panel" id="shipList"></div><div class="panel-actions"><button class="btn btn-primary" id="hangarBack">BACK</button></div></section>
       <section class="screen panel-screen hidden" id="howtoScreen">
         <div class="panel-head">
           <h2 class="screen-title">HOW TO PLAY</h2>
