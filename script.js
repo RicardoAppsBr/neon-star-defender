@@ -53,7 +53,7 @@
     retryBtn: $('retryBtn'),
     gameoverMenuBtn: $('gameoverMenuBtn')
   };
-  const screens = [dom.menuScreen, dom.howtoScreen, dom.recordsScreen, dom.pauseScreen, dom.gameoverScreen, $('hangarScreen'), $('achScreen'), $('missionScreen')];
+  const screens = [dom.menuScreen, dom.howtoScreen, dom.recordsScreen, dom.pauseScreen, dom.gameoverScreen, $('hangarScreen'), $('achScreen'), $('missionScreen'), $('platinumScreen')];
 
   const fleet = [{name:'VANGUARD',cost:0,desc:'Balanced fighter',speed:345,rate:0.145,damage:1,tint:'#3df6ff'},{name:'PHANTOM',cost:60,desc:'Fast interceptor • rapid fire',speed:440,rate:0.105,damage:1,tint:'#ff68db'},{name:'TITAN',cost:140,desc:'Heavy fighter • double damage',speed:285,rate:0.19,damage:2,tint:'#ffbd55'}];
   fleet.push({name:'NOVA',cost:220,desc:'Twin plasma cannons',speed:360,rate:.17,damage:1,tint:'#78ffb8'},{name:'ECLIPSE',cost:340,desc:'Triple spread cannon',speed:330,rate:.22,damage:1,tint:'#a99aff'},{name:'SOLARIS',cost:500,desc:'Heavy twin pulse',speed:300,rate:.24,damage:2,tint:'#ff8055'});
@@ -77,8 +77,20 @@
   function savePremium(){try{localStorage.setItem(premiumKey,JSON.stringify(premium));}catch(e){}}
   const tr=(en,pt)=>premium.lang==='pt'?pt:en;
   const words={'PLAY':'JOGAR','HANGAR':'HANGAR','HOW TO PLAY':'COMO JOGAR','ACHIEVEMENTS':'CONQUISTAS','HIGH SCORES':'RECORDES','MISSIONS':'MISSÕES','TRAINING':'TREINO','BACK':'VOLTAR','DIFFICULTY':'DIFICULDADE','EASY':'FÁCIL','NORMAL':'NORMAL','HARD':'DIFÍCIL','SCORE':'PONTOS','WAVE':'ONDA','PAUSED':'PAUSADO','RESUME':'CONTINUAR','RESTART':'REINICIAR','MENU':'MENU','GAME OVER':'FIM DE JOGO','PLAY AGAIN':'JOGAR NOVAMENTE','BACK TO MENU':'VOLTAR AO MENU','FINAL SCORE':'PONTUAÇÃO FINAL','MOTHERSHIP':'NAVE-MÃE','Break the blockade. Defend the galaxy.':'Rompa o bloqueio. Defenda a galáxia.','HIGH SCORE':'RECORDE','SOUND: ON':'SOM: LIGADO','SOUND: OFF':'SOM: DESLIGADO'};
+  Object.assign(words, {'PILOT HQ':'CENTRAL DO PILOTO','30 career milestones':'30 marcos de carreira','The battle is waiting for you.':'A batalha espera por você.','SIGNAL LOST':'SINAL PERDIDO','DESKTOP':'COMPUTADOR','MOBILE':'CELULAR','ENEMIES':'INIMIGOS','TEMPORARY POWER-UPS':'PODERES TEMPORÁRIOS','BOSSES':'CHEFES','The top five pilots on this browser.':'Os cinco melhores pilotos deste navegador.','The top 5 scores are saved in this browser.':'Os cinco melhores recordes são salvos neste navegador.'});
+  const platinumKey='nsd33.platinum';
+  let platinum={owned:['standard'],weapon:'standard',daily:'',runs:0,seconds:0,quality:'auto'};
+  try {const q=JSON.parse(localStorage.getItem(platinumKey)||'{}');if(Array.isArray(q.owned))platinum.owned=['standard',...q.owned.filter(x=>['rail','storm'].includes(x))];if(platinum.owned.includes(q.weapon))platinum.weapon=q.weapon;if(typeof q.daily==='string')platinum.daily=q.daily;for(const k of ['runs','seconds'])if(Number.isFinite(q[k]))platinum[k]=Math.max(0,q[k]);if(q.quality==='low')platinum.quality='low';}catch(e){}
+  function savePlatinum(){try{localStorage.setItem(platinumKey,JSON.stringify(platinum));}catch(e){}}
+  function pilotHQ(){state.mode='platinum';showScreen($('platinumScreen'));const list=$('platinumList');list.replaceChildren();function card(title,body,action,fn,disabled=false){const d=document.createElement('div');d.className='info-card';const h=document.createElement('h3');h.textContent=title;const p=document.createElement('p');p.textContent=body;d.append(h,p);if(action){const b=document.createElement('button');b.className='btn btn-small';b.textContent=action;b.disabled=disabled;b.onclick=fn;d.append(b);}list.append(d);}
+  const now=new Date(),day=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate();card(tr('Daily supply','Suprimento diário'),tr('40 credits once per local day','40 créditos por dia local'),platinum.daily===day?tr('CLAIMED','RESGATADO'):tr('CLAIM','RESGATAR'),()=>{if(platinum.daily===day)return;platinum.daily=day;savePlatinum();earn(40);pilotHQ();},platinum.daily===day);
+  card(tr('Career statistics','Estatísticas de carreira'),`${tr('Runs','Partidas')}: ${platinum.runs} · ${tr('Minutes','Minutos')}: ${Math.floor(platinum.seconds/60)} · ${tr('Kills','Abates')}: ${progress.kills} · ${tr('Bosses','Chefes')}: ${progress.bosses} · ${tr('Wave','Onda')}: ${progress.wave}`);
+  card(tr('Medals','Medalhas'),[5,15,30,50].map((n,i)=>(progress.wave>=n?'★':'☆')+' '+tr(['Bronze','Silver','Gold','Platinum'][i],['Bronze','Prata','Ouro','Platina'][i])+' '+n).join(' · '));
+  for(const [id,cost,en,pt,desc,descpt] of [['standard',0,'Standard','Padrão','Original ship weapon','Arma original da nave'],['rail',180,'Rail cannon','Canhão magnético','Focused high damage','Dano concentrado'],['storm',260,'Storm cannon','Canhão tempestade','Five parallel shots','Cinco tiros paralelos']]){const owned=platinum.owned.includes(id);card(tr(en,pt),tr(desc,descpt),platinum.weapon===id?tr('EQUIPPED','EQUIPADO'):owned?tr('EQUIP','EQUIPAR'):tr('UNLOCK','DESBLOQUEAR')+' '+cost+' CR',()=>{if(!owned){if(profile.credits<cost)return;profile.credits-=cost;platinum.owned.push(id);saveProfile();}platinum.weapon=id;savePlatinum();pilotHQ();},platinum.weapon===id||(!owned&&profile.credits<cost));}
+  card(tr('Graphics','Gráficos'),platinum.quality==='low'?tr('Reduced effects','Efeitos reduzidos'):tr('Full effects','Efeitos completos'),tr('SWITCH','ALTERNAR'),()=>{platinum.quality=platinum.quality==='low'?'auto':'low';savePlatinum();pilotHQ();});translateUI();}
+  $('platinumBtn').onclick=pilotHQ;$('platinumBack').onclick=()=>goMenu();
   const originals=new Map();
-  function translateUI(){document.documentElement.lang=premium.lang==='pt'?'pt-BR':'en';for(const el of document.querySelectorAll('button,h2,option,.stat-label,.tagline,.best-badge span,.bossbar-label span,.final-score span')){if(!originals.has(el)&&words[el.textContent.trim()])originals.set(el,el.textContent.trim());if(originals.has(el)&&!['soundBtn','pauseSoundBtn'].includes(el.id))el.textContent=tr(originals.get(el),words[originals.get(el)]);}$('langBtn').textContent=tr('PT-BR','EN');}
+  function translateUI(){document.documentElement.lang=premium.lang==='pt'?'pt-BR':'en';for(const el of document.querySelectorAll('button,h2,h3,option,.stat-label,.tagline,.best-badge span,.bossbar-label span,.final-score span,.screen-sub,.small-note,.kicker')){if(!originals.has(el)&&words[el.textContent.trim()])originals.set(el,el.textContent.trim());if(originals.has(el)&&!['soundBtn','pauseSoundBtn'].includes(el.id))el.textContent=tr(originals.get(el),words[originals.get(el)]);}$('langBtn').textContent=tr('PT-BR','EN');}
   $('langBtn').onclick=()=>{premium.lang=tr('pt','en');savePremium();translateUI();updateSoundUI();};
   const missions=[['hunter','kills',50,35,'Destroy 50 enemies','Destrua 50 inimigos'],['boss','bosses',3,70,'Defeat 3 bosses','Derrote 3 chefes'],['frontier','wave',15,100,'Reach wave 15','Chegue à onda 15'],['elite','wave',30,180,'Reach wave 30','Chegue à onda 30']];
   function missionMenu(){state.mode='missions';showScreen($('missionScreen'));const list=$('missionList');list.replaceChildren();for(const [id,key,target,reward,en,pt] of missions){const d=document.createElement('div');d.className='info-card';const title=document.createElement('h3');title.textContent=tr(en,pt);const p=document.createElement('p');p.textContent=Math.min(progress[key],target)+' / '+target+' · '+reward+' CR';const b=document.createElement('button');b.className='btn btn-small';b.textContent=premium.claimed.includes(id)?tr('CLAIMED','RESGATADO'):tr('CLAIM','RESGATAR');b.disabled=progress[key]<target||premium.claimed.includes(id);b.onclick=()=>{if(b.disabled||premium.claimed.includes(id))return;premium.claimed.push(id);savePremium();earn(reward);missionMenu();};d.append(title,p,b);list.append(d);}translateUI();}
@@ -779,12 +791,14 @@
     showScreen(null);
     setHudVisible(true);
     startWave(1);
+    platinum.runs++;savePlatinum();window.NSDPlatform?.start();
     state.power.shield=difficulty()===.8?14:difficulty()===1.25?4:8;
     updateRunStats();
     Sound.start();
   }
 
   function goMenu() {
+    window.NSDPlatform?.stop();savePlatinum();
     state.mode = 'menu';
     training=false;
     state.player = null;
@@ -820,6 +834,7 @@
     const types = ['scout'];
     if (n >= 2) types.push('serpent');
     if (n >= 3) types.push('gunner');
+    if(n>=6)types.push('interceptor');if(n>=11)types.push('armored');
     for (let i = 0; i < total; i++) {
       let type = types[i % types.length];
       if (i > 0 && type === 'gunner' && n < 4) type = 'scout';
@@ -855,6 +870,7 @@
   }
 
   const enemyConfig = {
+    interceptor:{hp:2,r:13,speed:190,score:210,width:28}, armored:{hp:7,r:23,speed:65,score:400,width:48},
     scout: { hp: 1, r: 15, speed: 108, score: 100, width: 32 },
     serpent: { hp: 2, r: 16, speed: 80, score: 160, width: 35 },
     gunner: { hp: 3, r: 18, speed: 74, score: 240, width: 38 }
@@ -1008,9 +1024,9 @@
     const p = state.player;
     if (!p) return;
     const offset = state.power.double > 0 ? 9 : 0;
-    const shots = profile.selected===4 ? [-13,0,13] : profile.selected>=3 ? [-10,10] : offset ? [-offset, offset] : [0];
+    const shots = platinum.weapon==='storm'?[-24,-12,0,12,24]:platinum.weapon==='rail'?[0]:profile.selected===4 ? [-13,0,13] : profile.selected>=3 ? [-10,10] : offset ? [-offset, offset] : [0];
     for (const dx of shots) {
-      state.bullets.push({ x: p.x + dx, y: p.y - 20, vy: -880, r: 4, dmg: fleet[profile.selected].damage + premium.levels[profile.selected]*0.35 });
+      state.bullets.push({ x: p.x + dx, y: p.y - 20, vy: -880, r: 4, dmg: (fleet[profile.selected].damage + premium.levels[profile.selected]*0.35)*(platinum.weapon==='rail'?2.5:platinum.weapon==='storm'?.65:1) });
       for (let i = 0; i < 2; i++) {
         state.particles.push({
           x: p.x + dx + rand(-2, 2), y: p.y - 22,
@@ -1097,7 +1113,7 @@
       const e = state.enemies[i];
       e.age += dt;
       e.flash = Math.max(0, e.flash - dt);
-      if (e.type === 'scout') {
+      if(e.type==='interceptor'){e.y+=e.speed*dt;e.x=clamp(e.baseX+Math.sin(e.age*4+e.phase)*65,25,W-25);}else if(e.type==='armored'){e.y+=e.speed*dt;e.fireTimer-=dt;if(e.fireTimer<=0){enemyShoot(e);e.fireTimer=2.1;}}else if (e.type === 'scout') {
         e.y += e.speed * dt;
         e.x = e.baseX + Math.sin(e.age * 1.6 + e.phase) * 10;
       } else if (e.type === 'serpent') {
@@ -1200,6 +1216,7 @@
       boss.pattern = 0;
       boss.shootTimer = 4.0;
     }
+    if(boss.stage>=2)boss.shootTimer*=boss.stage===3?.62:.8;
     Sound.bossShot();
   }
 
@@ -1280,6 +1297,7 @@
   function damageBoss(boss, amount) {
     if (boss.dead) return;
     boss.hp -= amount;
+    const stage=boss.hp<=boss.maxHp*.3?3:boss.hp<=boss.maxHp*.65?2:1;if(boss.hp>0&&stage>(boss.stage||1)){boss.stage=stage;boss.shootTimer=Math.min(boss.shootTimer,1.2);showBanner(tr('BOSS PHASE ','FASE DO CHEFE ')+stage,tr('ATTACK INTENSIFIES','ATAQUE INTENSIFICADO'),true,1.3);}
     boss.hurtFlash = 0.08;
     addPoints(5);
     if (boss.hp <= 0) {
@@ -1424,6 +1442,7 @@
   }
 
   function endGame() {
+    window.NSDPlatform?.stop();savePlatinum();
     if (state.mode !== 'playing') return;
     state.mode = 'gameover';
     state.pendingOver = 0;
@@ -1448,9 +1467,10 @@
 
   function updatePlaying(dt) {
     state.time += dt;
+    if(!training){platinum.seconds+=dt;if(Math.floor(platinum.seconds)%10===0&&Math.floor(platinum.seconds)!==lastSavedSecond){lastSavedSecond=Math.floor(platinum.seconds);savePlatinum();}}
     premiumTick(dt);
     comboTime-=dt;if(comboTime<=0)combo=0;updateRunStats();
-    musicClock-=dt;if(musicClock<=0){musicClock=0.32;const notes=[110,110,165,130.81,110,196,165,130.81];tone(notes[musicStep++%notes.length],0.19,{type:'triangle',volume:0.018});}
+    musicClock-=dt;if(musicClock<=0){musicClock=state.boss?.22:.32;const notes=state.boss?[82.41,82.41,123.47,98,82.41,146.83,123.47,98]:[110,110,165,130.81,110,196,165,130.81];tone(notes[musicStep++%notes.length],0.19,{type:'triangle',volume:0.018});}
 
     if (state.bannerTimer > 0) {
       state.bannerTimer -= dt;
@@ -1501,6 +1521,7 @@
   }
 
   function drawGlow(x, y, radius, color, alpha = 0.55) {
+    if(platinum.quality==='low')return;
     const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
     gradient.addColorStop(0, color);
     gradient.addColorStop(1, 'rgba(0,0,0,0)');
@@ -1566,7 +1587,7 @@
 
   function drawEnemies() {
     for (const enemy of state.enemies) {
-      const sprite = sprites[enemy.type];
+      const sprite = sprites[enemy.type] || sprites[enemy.type==='interceptor'?'serpent':'gunner'];
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
       const aura = enemy.type === 'scout' ? 'rgba(255,63,164,.5)' : enemy.type === 'serpent' ? 'rgba(163,91,255,.55)' : 'rgba(255,155,74,.5)';
@@ -1738,6 +1759,7 @@
 
   function pauseGame() {
     if (state.mode !== 'playing') return;
+    window.NSDPlatform?.stop();savePlatinum();
     state.mode = 'paused';
     state.keys = Object.create(null);
     showScreen(dom.pauseScreen);
@@ -1748,10 +1770,12 @@
   function resumeGame() {
     if (state.mode !== 'paused') return;
     state.mode = 'playing';
+    window.NSDPlatform?.start();
     showScreen(null);
     Sound.ui();
   }
 
+  let lastSavedSecond=-1;
   let drag = null;
   let lastTime = 0;
 
@@ -1767,6 +1791,7 @@
     } else if (state.mode === 'menu' || state.mode === 'howto' || state.mode === 'records') {
       state.menuTime += dt;
     }
+    if(state.particles.length>600)state.particles.splice(0,state.particles.length-600);
     updateStars(dt);
     render(dt);
     requestAnimationFrame(frame);
@@ -1930,9 +1955,10 @@
     };
   }
 
+  window.addEventListener('pagehide',()=>{savePlatinum();saveProfile();savePremium();saveProgress();window.NSDPlatform?.stop();});
   translateUI();
   window.NSD = {
-    version: '3.2.0',
+    version: '3.3.0',
     get snapshot() { return snapshot(); },
     start: startGame,
     pause: pauseGame,
