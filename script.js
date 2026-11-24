@@ -53,8 +53,19 @@
     retryBtn: $('retryBtn'),
     gameoverMenuBtn: $('gameoverMenuBtn')
   };
-  const screens = [dom.menuScreen, dom.howtoScreen, dom.recordsScreen, dom.pauseScreen, dom.gameoverScreen];
+  const screens = [dom.menuScreen, dom.howtoScreen, dom.recordsScreen, dom.pauseScreen, dom.gameoverScreen, $('hangarScreen')];
 
+  const fleet = [{name:'VANGUARD',cost:0,desc:'Balanced fighter',speed:345,rate:0.145,damage:1,tint:'#3df6ff'},{name:'PHANTOM',cost:60,desc:'Fast interceptor • rapid fire',speed:440,rate:0.105,damage:1,tint:'#ff68db'},{name:'TITAN',cost:140,desc:'Heavy fighter • double damage',speed:285,rate:0.19,damage:2,tint:'#ffbd55'}];
+  const profileKey = 'neonstar.profile.v3';
+  let profile = {credits:0,owned:[0],selected:0};
+  try { const v=JSON.parse(localStorage.getItem(profileKey)); if(v && Number.isFinite(v.credits) && Array.isArray(v.owned)) { profile={credits:Math.max(0,Math.floor(v.credits)),owned:[0,...v.owned.filter(i=>i===1||i===2)],selected:0}; if(profile.owned.includes(v.selected)) profile.selected=v.selected; } } catch(e){}
+  function saveProfile(){try{localStorage.setItem(profileKey,JSON.stringify(profile));}catch(e){}}
+  function earn(n){profile.credits+=n;saveProfile();}
+  function hangar(){state.mode='hangar';showScreen($('hangarScreen'));$('credits').textContent=profile.credits+' CREDITS • Earn credits by defeating enemies';const list=$('shipList');list.replaceChildren();fleet.forEach((ship,i)=>{const card=document.createElement('div');card.className='info-card ship-card';const title=document.createElement('h3');title.textContent=ship.name;title.style.color=ship.tint;const desc=document.createElement('p');desc.textContent=ship.desc;const b=document.createElement('button');b.className='btn btn-small';b.textContent=profile.selected===i?'EQUIPPED':profile.owned.includes(i)?'EQUIP':'UNLOCK • '+ship.cost;b.disabled=profile.selected===i||(!profile.owned.includes(i)&&profile.credits<ship.cost);b.onclick=()=>{if(!profile.owned.includes(i)){if(profile.credits<ship.cost)return;profile.credits-=ship.cost;profile.owned.push(i);}profile.selected=i;saveProfile();hangar();};card.append(title,desc,b);list.append(card);});}
+  $('hangarBtn').onclick=hangar; $('hangarBack').onclick=()=>goMenu();
+  const sectors=['ORION GATE','CRIMSON RIFT','FROZEN NEBULA','VOID FRONTIER'];
+  let combo=0,comboTime=0,runCredits=0,musicClock=0,musicStep=0;
+  function updateRunStats(){const t=$('runStats');const label='×'+(1+Math.min(4,Math.floor(combo/4)))+' COMBO  •  +'+runCredits+' CR  •  '+sectors[Math.floor((state.wave-1)/5)%4];if(t.textContent!==label)t.textContent=label;}
   function layoutView() {
     const width = shell.clientWidth || 360;
     shell.style.setProperty('--u', (width / W).toFixed(4) + 'px');
@@ -701,6 +712,7 @@
   }
 
   function resetGame() {
+    combo=0;comboTime=0;runCredits=0;musicClock=0;musicStep=0;
     state.score = 0;
     state.lives = 3;
     state.wave = 1;
@@ -742,6 +754,8 @@
     showScreen(null);
     setHudVisible(true);
     startWave(1);
+    state.power.shield=8;
+    updateRunStats();
     Sound.start();
   }
 
@@ -769,14 +783,14 @@
   }
 
   function waveSubtitle(n) {
-    if (n === 1) return 'GET READY, PILOT';
+    if (n === 1) return state.coarse ? 'DRAG TO MOVE • AUTO FIRE' : 'WASD / ARROWS • SPACE TO FIRE';
     if (n % 5 === 4) return 'SOMETHING BIG IS COMING';
     return 'INCOMING INVADERS';
   }
 
   function buildWaveQueue(n) {
     const queue = [];
-    const total = Math.min(26, 6 + Math.floor((n - 1) * 1.5));
+    const total = Math.min(26, 8 + Math.floor((n - 1) * 1.5));
     const types = ['scout'];
     if (n >= 2) types.push('serpent');
     if (n >= 3) types.push('gunner');
@@ -791,6 +805,7 @@
 
   function startWave(n) {
     state.wave = n;
+    updateRunStats();
     updateWaveHUD();
     state.waveInfo = {
       spawnQueue: [], spawnTimer: 0, active: true, cleared: false,
@@ -808,7 +823,7 @@
       return;
     }
     state.waveInfo.spawnQueue = buildWaveQueue(n);
-    state.waveInfo.spawnTimer = 1.1;
+    state.waveInfo.spawnTimer = 0.35;
     showBanner('WAVE ' + String(n).padStart(2, '0'), waveSubtitle(n), false, 1.6);
     Sound.waveStart();
   }
@@ -822,7 +837,7 @@
   function spawnEnemy(type) {
     const cfg = enemyConfig[type];
     const wave = state.wave;
-    const x = rand(52, W - 52);
+    const x = wave % 3 === 1 ? 55 + ((state.waveInfo.spawnQueue.length * 73) % 370) : rand(52, W - 52);
     const difficulty = 1 + (wave - 1) * 0.035;
     const enemy = {
       type,
@@ -864,7 +879,7 @@
       wi.spawnTimer -= dt;
       if (wi.spawnTimer <= 0) {
         spawnEnemy(wi.spawnQueue.shift());
-        wi.spawnTimer = Math.max(0.3, 0.8 - state.wave * 0.024);
+        wi.spawnTimer = Math.max(0.3, 0.65 - state.wave * 0.024);
       }
     }
     if (!wi.cleared && wi.spawnQueue.length === 0 && state.enemies.length === 0) {
@@ -969,7 +984,7 @@
     const offset = state.power.double > 0 ? 9 : 0;
     const shots = offset ? [-offset, offset] : [0];
     for (const dx of shots) {
-      state.bullets.push({ x: p.x + dx, y: p.y - 20, vy: -880, r: 4, dmg: 1 });
+      state.bullets.push({ x: p.x + dx, y: p.y - 20, vy: -880, r: 4, dmg: fleet[profile.selected].damage });
       for (let i = 0; i < 2; i++) {
         state.particles.push({
           x: p.x + dx + rand(-2, 2), y: p.y - 22,
@@ -996,7 +1011,7 @@
     if (state.keys.ArrowDown || state.keys.KeyS) dy += 1;
     if (dx || dy) {
       const length = Math.hypot(dx, dy);
-      const speed = 345;
+      const speed = fleet[profile.selected].speed;
       p.x += (dx / length) * speed * dt;
       p.y += (dy / length) * speed * dt;
     }
@@ -1006,7 +1021,7 @@
     const firing = state.keys.Space || state.keys.KeyJ || state.autofire;
     if (firing && p.cool <= 0 && state.pendingOver <= 0) {
       playerShoot();
-      p.cool = state.power.rapid > 0 ? 0.078 : 0.155;
+      p.cool = fleet[profile.selected].rate * (state.power.rapid > 0 ? 0.55 : 1);
     }
 
     if (Math.random() < 0.55) {
@@ -1132,7 +1147,7 @@
         });
       }
       boss.pattern = 1;
-      boss.shootTimer = 2.35;
+      boss.shootTimer = boss.hp < boss.maxHp/2 ? 1.35 : 2.35;
     } else {
       const count = 16;
       const speed = 125 + state.wave * 2;
@@ -1163,6 +1178,7 @@
 
   function onBossDefeated(boss) {
     const bonus = 1000 + state.wave * 250;
+    earn(15);runCredits+=15;
     addPoints(bonus);
     showBanner('MOTHERSHIP DESTROYED', '+' + bonus + ' BONUS', false, 2.1);
     explode(boss.x, boss.y, 44, null, true);
@@ -1217,8 +1233,10 @@
 
   function killEnemy(enemy) {
     enemy.dead = true;
-    addPoints(enemy.score);
-    addFloater('+' + enemy.score, enemy.x, enemy.y - 12, '#b9fdff', 13);
+    combo++;comboTime=3.5;earn(1);runCredits++;
+    const multiplier=1+Math.min(4,Math.floor(combo/4));
+    addPoints(enemy.score*multiplier);
+    addFloater('+' + enemy.score*multiplier, enemy.x, enemy.y - 12, '#b9fdff', 13);
     explode(enemy.x, enemy.y, enemy.type === 'gunner' ? 20 : 13);
     Sound.explode();
     const wi = state.waveInfo;
@@ -1354,6 +1372,7 @@
       Sound.shieldBreak();
       return;
     }
+    combo=0;comboTime=0;
     state.lives -= 1;
     updateLivesHUD(true);
     state.shake = 16;
@@ -1402,6 +1421,9 @@
 
   function updatePlaying(dt) {
     state.time += dt;
+    comboTime-=dt;if(comboTime<=0)combo=0;updateRunStats();
+    musicClock-=dt;if(musicClock<=0){musicClock=0.32;const notes=[110,110,165,130.81,110,196,165,130.81];tone(notes[musicStep++%notes.length],0.19,{type:'triangle',volume:0.018});}
+
     if (state.bannerTimer > 0) {
       state.bannerTimer -= dt;
       if (state.bannerTimer <= 0) hideBanner();
@@ -1647,6 +1669,10 @@
       ctx.translate(rand(-state.shake, state.shake), rand(-state.shake, state.shake));
     }
     ctx.drawImage(background, 0, 0);
+    const sector=Math.floor((state.wave-1)/5)%4;
+    if(sector){ctx.fillStyle=['transparent','rgba(150,20,30,.19)','rgba(0,130,180,.17)','rgba(100,20,170,.22)'][sector];ctx.fillRect(0,0,W,H);}
+    if(state.player && state.mode==='playing'){ctx.strokeStyle=fleet[profile.selected].tint;ctx.globalAlpha=.32;ctx.beginPath();ctx.arc(state.player.x,state.player.y,23,0,TAU);ctx.stroke();ctx.globalAlpha=1;}
+
     drawStars();
     const showGame = state.player && (state.mode === 'playing' || state.mode === 'paused' || state.mode === 'gameover');
     if (showGame) {
@@ -1771,6 +1797,7 @@
       return;
     }
     if (state.mode === 'playing') {
+      if(code==='KeyF'&&!event.repeat)state.autofire=!state.autofire;
       state.keys[code] = true;
       if (code === 'Space') ensureAudio();
     }
@@ -1874,13 +1901,13 @@
   }
 
   window.NSD = {
-    version: '1.0.0',
+    version: '3.0.0',
     get snapshot() { return snapshot(); },
     start: startGame,
     pause: pauseGame,
     resume: resumeGame,
     toMenu: goMenu,
-    _debug: {
+    ...(location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? { _debug: {
       gotoWave(n) {
         if (state.mode !== 'playing') return false;
         startWave(clamp(Number(n) || 1, 1, 999));
@@ -1946,7 +1973,7 @@
         renderRecords();
         return true;
       }
-    }
+    }} : {})
   };
 
   updateSoundUI();

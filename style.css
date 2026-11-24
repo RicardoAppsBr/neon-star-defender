@@ -529,3 +529,12 @@ body{
 @media (prefers-reduced-motion:reduce){
   *{animation:none !important;transition:none !important;}
 }
+/* Professional Edition */
+.menu-screen{background:linear-gradient(180deg,rgba(4,8,28,.48),rgba(5,3,15,.87) 65%,#05030f);padding-top:calc(var(--u)*24);}
+.menu-actions{gap:calc(var(--u)*7)}
+.menu-actions .btn{min-height:0;padding:calc(var(--u)*11) calc(var(--u)*14)}
+.menu-mid{gap:calc(var(--u)*10)}
+.run-stats{position:absolute;top:calc(var(--u)*69);left:0;right:0;text-align:center;font-size:calc(var(--u)*11);font-weight:bold;letter-spacing:.06em;color:#ffd58a;text-shadow:0 1px 4px #000;pointer-events:none}
+.ship-card{display:grid;gap:calc(var(--u)*10);margin-bottom:calc(var(--u)*12)}
+.ship-card .btn:disabled{opacity:.45;cursor:default}
+.btn:focus-visible{outline:2px solid #fff;outline-offset:-4px}
