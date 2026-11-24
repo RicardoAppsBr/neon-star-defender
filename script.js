@@ -53,7 +53,7 @@
     retryBtn: $('retryBtn'),
     gameoverMenuBtn: $('gameoverMenuBtn')
   };
-  const screens = [dom.menuScreen, dom.howtoScreen, dom.recordsScreen, dom.pauseScreen, dom.gameoverScreen, $('hangarScreen'), $('achScreen')];
+  const screens = [dom.menuScreen, dom.howtoScreen, dom.recordsScreen, dom.pauseScreen, dom.gameoverScreen, $('hangarScreen'), $('achScreen'), $('missionScreen')];
 
   const fleet = [{name:'VANGUARD',cost:0,desc:'Balanced fighter',speed:345,rate:0.145,damage:1,tint:'#3df6ff'},{name:'PHANTOM',cost:60,desc:'Fast interceptor • rapid fire',speed:440,rate:0.105,damage:1,tint:'#ff68db'},{name:'TITAN',cost:140,desc:'Heavy fighter • double damage',speed:285,rate:0.19,damage:2,tint:'#ffbd55'}];
   fleet.push({name:'NOVA',cost:220,desc:'Twin plasma cannons',speed:360,rate:.17,damage:1,tint:'#78ffb8'},{name:'ECLIPSE',cost:340,desc:'Triple spread cannon',speed:330,rate:.22,damage:1,tint:'#a99aff'},{name:'SOLARIS',cost:500,desc:'Heavy twin pulse',speed:300,rate:.24,damage:2,tint:'#ff8055'});
@@ -62,7 +62,7 @@
   try { const v=JSON.parse(localStorage.getItem(profileKey)); if(v && Number.isFinite(v.credits) && Array.isArray(v.owned)) { profile={credits:Math.max(0,Math.floor(v.credits)),owned:[0,...v.owned.filter(i=>Number.isInteger(i)&&i>0&&i<fleet.length)],selected:0}; if(profile.owned.includes(v.selected)) profile.selected=v.selected; } } catch(e){}
   function saveProfile(){try{localStorage.setItem(profileKey,JSON.stringify(profile));}catch(e){}}
   function earn(n){profile.credits+=n;saveProfile();}
-  function hangar(){state.mode='hangar';showScreen($('hangarScreen'));$('credits').textContent=profile.credits+' CREDITS • Earn credits by defeating enemies';const list=$('shipList');list.replaceChildren();fleet.forEach((ship,i)=>{const card=document.createElement('div');card.className='info-card ship-card';const title=document.createElement('h3');title.textContent=ship.name;title.style.color=ship.tint;const desc=document.createElement('p');desc.textContent=ship.desc;const b=document.createElement('button');b.className='btn btn-small';b.textContent=profile.selected===i?'EQUIPPED':profile.owned.includes(i)?'EQUIP':'UNLOCK • '+ship.cost;b.disabled=profile.selected===i||(!profile.owned.includes(i)&&profile.credits<ship.cost);b.onclick=()=>{if(!profile.owned.includes(i)){if(profile.credits<ship.cost)return;profile.credits-=ship.cost;profile.owned.push(i);}profile.selected=i;saveProfile();hangar();};const preview=document.createElement('canvas');preview.width=96;preview.height=96;preview.className='ship-preview';const pc=preview.getContext('2d');pc.imageSmoothingEnabled=false;pc.drawImage(shipArt[i].canvas,12,12,72,72);card.append(preview,title,desc,b);list.append(card);});}
+  function hangar(){state.mode='hangar';showScreen($('hangarScreen'));$('credits').textContent=profile.credits+' CREDITS • Earn credits by defeating enemies';const list=$('shipList');list.replaceChildren();fleet.forEach((ship,i)=>{const card=document.createElement('div');card.className='info-card ship-card';const title=document.createElement('h3');title.textContent=ship.name;title.style.color=ship.tint;const desc=document.createElement('p');desc.textContent=ship.desc;const b=document.createElement('button');b.className='btn btn-small';b.textContent=profile.selected===i?'EQUIPPED':profile.owned.includes(i)?'EQUIP':'UNLOCK • '+ship.cost;b.disabled=profile.selected===i||(!profile.owned.includes(i)&&profile.credits<ship.cost);b.onclick=()=>{if(!profile.owned.includes(i)){if(profile.credits<ship.cost)return;profile.credits-=ship.cost;profile.owned.push(i);}profile.selected=i;saveProfile();hangar();};const preview=document.createElement('canvas');preview.width=96;preview.height=96;preview.className='ship-preview';const pc=preview.getContext('2d');pc.imageSmoothingEnabled=false;pc.drawImage(shipArt[i].canvas,12,12,72,72);const up=document.createElement('button');up.className='btn btn-small';const level=premium.levels[i],price=80*(level+1);up.textContent=level===3?tr('MAX LEVEL','NÍVEL MÁXIMO'):tr('UPGRADE','EVOLUIR')+' '+(level+1)+' · '+price+' CR';up.disabled=level===3||!profile.owned.includes(i)||profile.credits<price;up.onclick=()=>{if(up.disabled)return;profile.credits-=price;premium.levels[i]++;saveProfile();savePremium();hangar();};card.append(preview,title,desc,b,up);list.append(card);});}
   $('hangarBtn').onclick=hangar; $('hangarBack').onclick=()=>goMenu();
   let progress={kills:0,bosses:0,wave:0};try{Object.assign(progress,JSON.parse(localStorage.getItem('nsd31.progress')||'{}'));}catch(e){}
   function saveProgress(){try{localStorage.setItem('nsd31.progress',JSON.stringify(progress));}catch(e){}}
@@ -71,6 +71,23 @@
   const sectors=['ORION GATE','CRIMSON RIFT','FROZEN NEBULA','VOID FRONTIER'];
   let combo=0,comboTime=0,runCredits=0,musicClock=0,musicStep=0;
   function updateRunStats(){const t=$('runStats');const label='×'+(1+Math.min(4,Math.floor(combo/4)))+' COMBO  •  +'+runCredits+' CR  •  '+sectors[Math.floor((state.wave-1)/5)%4];if(t.textContent!==label)t.textContent=label;}
+  const premiumKey='nsd32.premium';
+  let premium={levels:[0,0,0,0,0,0],claimed:[],lang:'en'};
+  try {const q=JSON.parse(localStorage.getItem(premiumKey)||'{}');if(Array.isArray(q.levels))premium.levels=premium.levels.map((_,i)=>Math.max(0,Math.min(3,Math.floor(Number(q.levels[i])||0))));if(Array.isArray(q.claimed))premium.claimed=q.claimed.filter(x=>typeof x==='string');if(q.lang==='pt')premium.lang='pt';}catch(e){}
+  function savePremium(){try{localStorage.setItem(premiumKey,JSON.stringify(premium));}catch(e){}}
+  const tr=(en,pt)=>premium.lang==='pt'?pt:en;
+  const words={'PLAY':'JOGAR','HANGAR':'HANGAR','HOW TO PLAY':'COMO JOGAR','ACHIEVEMENTS':'CONQUISTAS','HIGH SCORES':'RECORDES','MISSIONS':'MISSÕES','TRAINING':'TREINO','BACK':'VOLTAR','DIFFICULTY':'DIFICULDADE','EASY':'FÁCIL','NORMAL':'NORMAL','HARD':'DIFÍCIL','SCORE':'PONTOS','WAVE':'ONDA','PAUSED':'PAUSADO','RESUME':'CONTINUAR','RESTART':'REINICIAR','MENU':'MENU','GAME OVER':'FIM DE JOGO','PLAY AGAIN':'JOGAR NOVAMENTE','BACK TO MENU':'VOLTAR AO MENU','FINAL SCORE':'PONTUAÇÃO FINAL','MOTHERSHIP':'NAVE-MÃE','Break the blockade. Defend the galaxy.':'Rompa o bloqueio. Defenda a galáxia.','HIGH SCORE':'RECORDE','SOUND: ON':'SOM: LIGADO','SOUND: OFF':'SOM: DESLIGADO'};
+  const originals=new Map();
+  function translateUI(){document.documentElement.lang=premium.lang==='pt'?'pt-BR':'en';for(const el of document.querySelectorAll('button,h2,option,.stat-label,.tagline,.best-badge span,.bossbar-label span,.final-score span')){if(!originals.has(el)&&words[el.textContent.trim()])originals.set(el,el.textContent.trim());if(originals.has(el)&&!['soundBtn','pauseSoundBtn'].includes(el.id))el.textContent=tr(originals.get(el),words[originals.get(el)]);}$('langBtn').textContent=tr('PT-BR','EN');}
+  $('langBtn').onclick=()=>{premium.lang=tr('pt','en');savePremium();translateUI();updateSoundUI();};
+  const missions=[['hunter','kills',50,35,'Destroy 50 enemies','Destrua 50 inimigos'],['boss','bosses',3,70,'Defeat 3 bosses','Derrote 3 chefes'],['frontier','wave',15,100,'Reach wave 15','Chegue à onda 15'],['elite','wave',30,180,'Reach wave 30','Chegue à onda 30']];
+  function missionMenu(){state.mode='missions';showScreen($('missionScreen'));const list=$('missionList');list.replaceChildren();for(const [id,key,target,reward,en,pt] of missions){const d=document.createElement('div');d.className='info-card';const title=document.createElement('h3');title.textContent=tr(en,pt);const p=document.createElement('p');p.textContent=Math.min(progress[key],target)+' / '+target+' · '+reward+' CR';const b=document.createElement('button');b.className='btn btn-small';b.textContent=premium.claimed.includes(id)?tr('CLAIMED','RESGATADO'):tr('CLAIM','RESGATAR');b.disabled=progress[key]<target||premium.claimed.includes(id);b.onclick=()=>{if(b.disabled||premium.claimed.includes(id))return;premium.claimed.push(id);savePremium();earn(reward);missionMenu();};d.append(title,p,b);list.append(d);}translateUI();}
+  $('missionBtn').onclick=missionMenu;$('missionBack').onclick=()=>goMenu();
+  let abilityCooldown=0,training=false,trainingStep=0,trainingOrigin=null,trainingClock=0;
+  function pulse(){if(state.mode!=='playing'||!state.player||abilityCooldown>0||state.pendingOver>0)return;abilityCooldown=18;state.enemyBullets.length=0;for(const e of state.enemies)if(!e.dead)killEnemy(e);if(state.boss&&!state.boss.dead)damageBoss(state.boss,12+premium.levels[profile.selected]*4);addRing(state.player.x,state.player.y,'#70ffff',650,.65);Sound.explode();if(training&&trainingStep===2)trainingStep=3;}
+  $('abilityBtn').onclick=pulse;
+  $('trainingBtn').onclick=()=>{startGame();training=true;trainingStep=0;trainingClock=0;trainingOrigin={x:state.player.x,y:state.player.y};state.power.shield=999;};
+  function premiumTick(dt){abilityCooldown=Math.max(0,abilityCooldown-dt);const b=$('abilityBtn');const label=abilityCooldown>0?tr('PULSE','PULSO')+' · '+Math.ceil(abilityCooldown)+'s':tr('PULSE · READY','PULSO · PRONTO');if(b.textContent!==label)b.textContent=label;b.disabled=abilityCooldown>0;const hint=$('trainingHint');hint.classList.toggle('hidden',!training);if(!training)return;trainingClock+=dt;if(trainingStep===0&&Math.hypot(state.player.x-trainingOrigin.x,state.player.y-trainingOrigin.y)>45)trainingStep=1;if(trainingStep===1&&state.bullets.length>0)trainingStep=2;if(trainingStep===3){training=false;state.power.shield=8;hint.classList.add('hidden');showBanner(tr('TRAINING COMPLETE','TREINO CONCLUÍDO'),tr('Keep fighting!','Continue lutando!'));return;}hint.textContent=[tr('1 · Move your ship','1 · Mova sua nave'),tr('2 · Fire (Space / touch)','2 · Atire (Espaço / toque)'),tr('3 · Activate PULSE (Q or button)','3 · Ative PULSO (Q ou botão)')][trainingStep];}
   function layoutView() {
     const width = shell.clientWidth || 360;
     shell.style.setProperty('--u', (width / W).toFixed(4) + 'px');
@@ -330,7 +347,7 @@
   };
 
   function updateSoundUI() {
-    const label = audio.muted ? 'SOUND: OFF' : 'SOUND: ON';
+    const label = audio.muted ? tr('SOUND: OFF','SOM: DESLIGADO') : tr('SOUND: ON','SOM: LIGADO');
     dom.soundBtn.textContent = label;
     dom.pauseSoundBtn.textContent = label;
     dom.hudSoundBtn.textContent = audio.muted ? '×' : '♪';
@@ -720,7 +737,7 @@
 
   function difficulty(){return Number($('difficulty').value)||1;}
   function resetGame() {
-    combo=0;comboTime=0;runCredits=0;musicClock=0;musicStep=0;
+    combo=0;comboTime=0;runCredits=0;musicClock=0;musicStep=0;abilityCooldown=0;training=false;
     state.score = 0;
     state.lives = 3;
     state.wave = 1;
@@ -769,6 +786,7 @@
 
   function goMenu() {
     state.mode = 'menu';
+    training=false;
     state.player = null;
     state.bullets.length = 0;
     state.enemies.length = 0;
@@ -992,7 +1010,7 @@
     const offset = state.power.double > 0 ? 9 : 0;
     const shots = profile.selected===4 ? [-13,0,13] : profile.selected>=3 ? [-10,10] : offset ? [-offset, offset] : [0];
     for (const dx of shots) {
-      state.bullets.push({ x: p.x + dx, y: p.y - 20, vy: -880, r: 4, dmg: fleet[profile.selected].damage });
+      state.bullets.push({ x: p.x + dx, y: p.y - 20, vy: -880, r: 4, dmg: fleet[profile.selected].damage + premium.levels[profile.selected]*0.35 });
       for (let i = 0; i < 2; i++) {
         state.particles.push({
           x: p.x + dx + rand(-2, 2), y: p.y - 22,
@@ -1019,7 +1037,7 @@
     if (state.keys.ArrowDown || state.keys.KeyS) dy += 1;
     if (dx || dy) {
       const length = Math.hypot(dx, dy);
-      const speed = fleet[profile.selected].speed;
+      const speed = fleet[profile.selected].speed * (1+premium.levels[profile.selected]*0.04);
       p.x += (dx / length) * speed * dt;
       p.y += (dy / length) * speed * dt;
     }
@@ -1029,11 +1047,11 @@
     const firing = state.keys.Space || state.keys.KeyJ || state.autofire;
     if (firing && p.cool <= 0 && state.pendingOver <= 0) {
       playerShoot();
-      p.cool = fleet[profile.selected].rate * (state.power.rapid > 0 ? 0.55 : 1);
+      p.cool = fleet[profile.selected].rate * (1-premium.levels[profile.selected]*0.06) * (state.power.rapid > 0 ? 0.55 : 1);
     }
 
     if (Math.random() < 0.55) {
-      state.particles.push({
+      if(state.particles.length<450)state.particles.push({
         x: p.x + rand(-4, 4), y: p.y + 18,
         vx: rand(-16, 16), vy: rand(50, 110),
         life: rand(0.16, 0.3), maxLife: 0.3, size: rand(1, 2),
@@ -1147,7 +1165,7 @@
       const base = Math.atan2(p.y - boss.y, p.x - boss.x);
       const speed = 185 + state.wave * 3;
       for (let i = -3; i <= 3; i++) {
-        const angle = base + i * 0.135;
+        const angle = base + i * ([.135,.20,.10,.24,.16][(Math.floor(state.wave/5)-1)%5]||.135);
         state.enemyBullets.push({
           x: boss.x, y: boss.y + 34,
           vx: Math.cos(angle) * speed,
@@ -1158,7 +1176,7 @@
       boss.pattern = 1;
       boss.shootTimer = boss.hp < boss.maxHp/2 ? 1.35 : 2.35;
     } else {
-      const count = 16;
+      const count = [16,12,20,14,18][(Math.floor(state.wave/5)-1)%5] || 16;
       const speed = 125 + state.wave * 2;
       for (let i = 0; i < count; i++) {
         const angle = (i / count) * TAU + boss.t * 0.6;
@@ -1430,6 +1448,7 @@
 
   function updatePlaying(dt) {
     state.time += dt;
+    premiumTick(dt);
     comboTime-=dt;if(comboTime<=0)combo=0;updateRunStats();
     musicClock-=dt;if(musicClock<=0){musicClock=0.32;const notes=[110,110,165,130.81,110,196,165,130.81];tone(notes[musicStep++%notes.length],0.19,{type:'triangle',volume:0.018});}
 
@@ -1807,6 +1826,7 @@
       return;
     }
     if (state.mode === 'playing') {
+      if(code==='KeyQ'&&!event.repeat)pulse();
       if(code==='KeyF'&&!event.repeat)state.autofire=!state.autofire;
       state.keys[code] = true;
       if (code === 'Space') ensureAudio();
@@ -1910,8 +1930,9 @@
     };
   }
 
+  translateUI();
   window.NSD = {
-    version: '3.1.0',
+    version: '3.2.0',
     get snapshot() { return snapshot(); },
     start: startGame,
     pause: pauseGame,

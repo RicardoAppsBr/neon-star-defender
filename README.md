@@ -1,33 +1,7 @@
-# Neon Star Defender 3.0 — Professional Edition
+# Neon Star Defender 3.2 — Premium Edition
 
-Versão de desenvolvimento para testes, baseada no ZIP inglês anterior. Não é uma versão aprovada pela CrazyGames.
+Atualização da versão 3.1. Extraia o ZIP e abra index.html no navegador ou publique index.html, style.css e script.js na raiz do GitHub Pages. Faça backup antes. Os identificadores de armazenamento da versão anterior foram mantidos; o progresso é local ao navegador e endereço.
 
-## Executar no Windows
-1. Extraia todos os arquivos do ZIP para uma pasta.
-2. Abra index.html no Chrome ou Edge. Mantenha style.css e script.js na mesma pasta.
-3. Clique PLAY. Use WASD/setas, espaço para disparar, F para alternar disparo automático, Esc para pausar.
-4. HANGAR permite desbloquear e equipar três configurações de nave. Cada inimigo destruído rende um crédito; chefes rendem 15. Quatro eliminações em sequência aumentam o multiplicador, até 5x. Créditos e recordes ficam no armazenamento local do navegador.
+Controles: WASD/setas, Espaço para atirar, F para disparo automático, Q para pulso, Esc para pausa. No celular arraste a nave; disparo automático e botão PULSE. O pulso elimina inimigos comuns e projéteis e causa dano ao chefe; recarga de 18 segundos. TRAINING ensina movimento, disparo e pulso. MISSIONS oferece quatro metas de carreira com recompensa resgatável uma vez. No HANGAR cada nave tem três níveis de evolução compráveis com créditos. PT-BR/EN alterna os principais rótulos; textos secundários ainda estão em inglês. Seis naves, 30 conquistas e três dificuldades mantidas.
 
-## Celular
-Hospede os três arquivos estáticos em HTTPS (por exemplo, GitHub Pages, em um repositório de testes separado). Abra o endereço no navegador, toque PLAY e arraste para mover. O disparo é automático em dispositivos de toque. Teste em retrato e paisagem.
-
-## Testes antes de publicar
-- Menu, hangar, ajuda, recordes, pausa, retomada e reinício.
-- Movimento e disparo no teclado e toque; colisões, escudo, power-ups.
-- Derrote o chefe da onda 5 e confirme avanço para a onda 6.
-- Desbloqueie uma nave, recarregue a página e confira persistência.
-- Verifique áudio, desempenho, legibilidade e ausência de erros no console.
-- Peça a jogadores independentes que testem e avaliem diversão e dificuldade.
-
-## Limites
-Sem anúncios, SDK CrazyGames, compras reais, servidor ou ranking online. Música e efeitos sintetizados por código. As naves usam o sprite existente com diferenças de atributos e indicador de cor. Setores usam variações de cor do cenário. A ajuda e as dicas iniciais não constituem tutorial interativo completo. A sintaxe JS foi verificada com Node; o navegador automatizado bloqueou a abertura local, portanto testes de execução ainda precisam ser feitos. Não há garantia de aprovação. Consulte a política de reenvio antes de submeter e grave novas prévias reais.
-
-## 3.1 Ultimate Edition
-- Seis naves com silhuetas próprias e três novas opções de disparo.
-- Cinco aparências de chefe, com padrão inicial alternado; planeta em movimento, efeitos de explosão reforçados.
-- 30 marcos de carreira (abates, chefes e ondas), salvos localmente.
-- Dificuldade altera vida dos chefes e duração do escudo inicial. Recordes continuam compartilhados entre dificuldades.
-- Mantém a chave de perfil da versão 3.0; progresso depende da mesma origem e navegador.
-- Interface em inglês. Tutorial interativo, missões independentes, tradução completa e SDK não incluídos.
-- Testes: sintaxe JS e execução em Chromium com HTML/CSS/JS injetados: menu, seis naves, 30 conquistas, início, pausa e retomada sem erros observados. Navegação direta bloqueada pelo ambiente; teste em aparelho real e partida longa ainda necessários.
-- Para instalar: extraia o ZIP e abra index.html; para GitHub Pages substitua index.html, style.css e script.js no mesmo repositório, mantendo backup da versão anterior. Não apague dados do navegador.
+Testes: node --check; Chromium com HTML/CSS/JS carregados diretamente (navegação file bloqueada pelo ambiente). Verificados: versão, troca de idioma do botão PLAY, quatro missões, seis naves, 30 conquistas, treino até pulso, recarga, pausa e retomada. Sem erros JS observados nesse teste. Não foram validados persistência real, compras, resgates, desempenho em aparelhos reais ou campanha completa. SDK CrazyGames não integrado; armas independentes e tradução integral pendentes. Não há anúncios externos. Não reenviar sem testes e verificar política de reenvio.
