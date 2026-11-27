@@ -19,3 +19,13 @@ Testes efetivos: node --check nos dois JS; Chromium com HTML/CSS/JS injetados, a
 
 ## 3.3.2 — Audio Enhancement
 Painel AUDIO no menu e pausa. Volumes independentes: geral 100, música 60, efeitos 85, alertas 75. Preferências em nsd_audio_mix_v1; chaves anteriores preservadas. Botões de prévia permitem comparar armas, explosões e alertas. Compressor reduz picos, limite de 48 vozes e buffer de ruído reutilizado. Comece com volume físico moderado. Tradução dos botões de prévia permanece em inglês. SDK e demais pendências da 3.3.1 não foram alterados.
+
+## 3.3.3 — Final Release (candidata à validação)
+- Base: ZIP original 3.3.2. Chaves localStorage e parâmetros de mix preservados.
+- Traduções adicionais: instruções, banners, recordes, poderes e prévias de áudio. Nomes próprios permanecem. Revisão linguística completa em todas as ondas ainda necessária.
+- Pausa ao ocultar a página, limpeza de entrada, suspensão de áudio e descarte de quadros ocultos. WeakMap evita retenção de elementos descartados na tradução.
+- SDK v3: init, verificação de ambiente, eventos de jogo e carregamento quando disponível antes do fim da inicialização, muteAudio prioritário. Sem anúncios ou sincronização de conta/nuvem.
+- Referências: https://docs.crazygames.com/sdk/intro/ ; https://docs.crazygames.com/sdk/game/ ; https://docs.crazygames.com/requirements/technical/ .
+- Testes realizados: node --check nos dois JS; Chromium headless com HTML e scripts carregados diretamente, localStorage simulado, SDK simulado. Verificados painel de áudio, 10 prévias, alteração e restauração de volume, mute, versão, idioma PT, instruções, seis naves, créditos preexistentes, 30 conquistas, quatro missões, sete cartões HQ, banner da primeira onda, pausa/retomada, ocultação simulada e sequência dos eventos SDK. Sem erros JS observados nesses cenários.
+- Pendências: SDK real no portal Preview, desempenho em batalha longa, dispositivos reais, regressão completa, revisão bilíngue integral e persistência real após fechar navegador. Não é certificação de publicação, nem Full Implementation.
+- Instalação: faça backup; substitua os cinco arquivos no mesmo repositório e caminho para manter dados locais. Teste antes de enviar à CrazyGames. Não apague dados do navegador. Para simular SDK oficial localmente, use servidor localhost com internet. Para validação real use Preview do portal.

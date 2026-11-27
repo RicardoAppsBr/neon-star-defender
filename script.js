@@ -7,14 +7,6 @@
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d', { alpha: false });
   ctx.imageSmoothingEnabled = false;
-  window.__nsdError = null;
-  window.addEventListener('error', (event) => {
-    window.__nsdError = (event.message || 'erro') + ' @ ' + (event.filename || '') + ':' + (event.lineno || 0);
-  });
-  window.addEventListener('unhandledrejection', (event) => {
-    window.__nsdError = 'promise: ' + String(event.reason);
-  });
-
   const $ = (id) => document.getElementById(id);
   const shell = $('shell');
   const dom = {
@@ -78,6 +70,8 @@
   const tr=(en,pt)=>premium.lang==='pt'?pt:en;
   const words={'AUDIO':'ÁUDIO','PLAY':'JOGAR','HANGAR':'HANGAR','HOW TO PLAY':'COMO JOGAR','ACHIEVEMENTS':'CONQUISTAS','HIGH SCORES':'RECORDES','MISSIONS':'MISSÕES','TRAINING':'TREINO','BACK':'VOLTAR','DIFFICULTY':'DIFICULDADE','EASY':'FÁCIL','NORMAL':'NORMAL','HARD':'DIFÍCIL','SCORE':'PONTOS','WAVE':'ONDA','PAUSED':'PAUSADO','RESUME':'CONTINUAR','RESTART':'REINICIAR','MENU':'MENU','GAME OVER':'FIM DE JOGO','PLAY AGAIN':'JOGAR NOVAMENTE','BACK TO MENU':'VOLTAR AO MENU','FINAL SCORE':'PONTUAÇÃO FINAL','MOTHERSHIP':'NAVE-MÃE','Break the blockade. Defend the galaxy.':'Rompa o bloqueio. Defenda a galáxia.','HIGH SCORE':'RECORDE','SOUND: ON':'SOM: LIGADO','SOUND: OFF':'SOM: DESLIGADO'};
   Object.assign(words, {'PILOT HQ':'CENTRAL DO PILOTO','30 career milestones':'30 marcos de carreira','The battle is waiting for you.':'A batalha espera por você.','SIGNAL LOST':'SINAL PERDIDO','DESKTOP':'COMPUTADOR','MOBILE':'CELULAR','ENEMIES':'INIMIGOS','TEMPORARY POWER-UPS':'PODERES TEMPORÁRIOS','BOSSES':'CHEFES','The top five pilots on this browser.':'Os cinco melhores pilotos deste navegador.','The top 5 scores are saved in this browser.':'Os cinco melhores recordes são salvos neste navegador.'});
+  Object.assign(words,{"ARCADE // SECTOR 7": "ARCADE // SETOR 7", "PULSE · READY": "PULSO · PRONTO", "Laser": "Laser", "Rail": "Magnético", "Storm": "Tempestade", "Pulse": "Pulso", "Explosion": "Explosão", "Boss explosion": "Explosão do chefe", "Damage": "Dano", "Wave": "Onda", "Alarm": "Alarme", "Music": "Música", "Survive enemy waves. A mothership appears every 5 waves. Chain kills to multiply points. Earn credits and unlock ships in the hangar.": "Sobreviva às ondas inimigas. Uma nave-mãe aparece a cada 5 ondas. Encadeie abates para multiplicar pontos. Ganhe créditos e desbloqueie naves no hangar.", "WARNING": "ALERTA", "MOTHERSHIP DETECTED": "NAVE-MÃE DETECTADA", "WAVE CLEARED": "ONDA CONCLUÍDA", "MOTHERSHIP DESTROYED": "NAVE-MÃE DESTRUÍDA", "SHIP DESTROYED": "NAVE DESTRUÍDA", "SHIELD": "ESCUDO", "DOUBLE SHOT": "TIRO DUPLO", "RAPID FIRE": "TIRO RÁPIDO", "SHIELD ACTIVE": "ESCUDO ATIVO", "SHIELD BROKEN": "ESCUDO QUEBRADO", "DRAG TO MOVE • AUTO FIRE": "ARRASTE PARA MOVER • TIRO AUTOMÁTICO", "WASD / ARROWS • SPACE TO FIRE": "WASD / SETAS • ESPAÇO PARA ATIRAR", "SOMETHING BIG IS COMING": "ALGO GRANDE ESTÁ CHEGANDO", "INCOMING INVADERS": "INVASORES SE APROXIMAM"});
+  const localize=t=>premium.lang==='pt'?(words[t]||t.replace(/^WAVE (\d+)$/,'ONDA $1').replace(/ BONUS$/,' BÔNUS')):t;
   const platinumKey='nsd33.platinum';
   let platinum={owned:['standard'],weapon:'standard',daily:'',runs:0,seconds:0,quality:'auto'};
   try {const q=JSON.parse(localStorage.getItem(platinumKey)||'{}');if(Array.isArray(q.owned))platinum.owned=['standard',...q.owned.filter(x=>['rail','storm'].includes(x))];if(platinum.owned.includes(q.weapon))platinum.weapon=q.weapon;if(typeof q.daily==='string')platinum.daily=q.daily;for(const k of ['runs','seconds'])if(Number.isFinite(q[k]))platinum[k]=Math.max(0,q[k]);if(q.quality==='low')platinum.quality='low';}catch(e){}
@@ -89,8 +83,8 @@
   for(const [id,cost,en,pt,desc,descpt] of [['standard',0,'Standard','Padrão','Original ship weapon','Arma original da nave'],['rail',180,'Rail cannon','Canhão magnético','Focused high damage','Dano concentrado'],['storm',260,'Storm cannon','Canhão tempestade','Five parallel shots','Cinco tiros paralelos']]){const owned=platinum.owned.includes(id);card(tr(en,pt),tr(desc,descpt),platinum.weapon===id?tr('EQUIPPED','EQUIPADO'):owned?tr('EQUIP','EQUIPAR'):tr('UNLOCK','DESBLOQUEAR')+' '+cost+' CR',()=>{if(!owned){if(profile.credits<cost)return;profile.credits-=cost;platinum.owned.push(id);saveProfile();}platinum.weapon=id;savePlatinum();pilotHQ();},platinum.weapon===id||(!owned&&profile.credits<cost));}
   card(tr('Graphics','Gráficos'),platinum.quality==='low'?tr('Reduced effects','Efeitos reduzidos'):tr('Full effects','Efeitos completos'),tr('SWITCH','ALTERNAR'),()=>{platinum.quality=platinum.quality==='low'?'auto':'low';savePlatinum();pilotHQ();});translateUI();}
   $('platinumBtn').onclick=pilotHQ;$('platinumBack').onclick=()=>goMenu();
-  const originals=new Map();
-  function translateUI(){document.documentElement.lang=premium.lang==='pt'?'pt-BR':'en';for(const el of document.querySelectorAll('button,h2,h3,option,[data-i18n],.stat-label,.tagline,.best-badge span,.bossbar-label span,.final-score span,.screen-sub,.small-note,.kicker')){if(!originals.has(el)&&words[el.textContent.trim()])originals.set(el,el.textContent.trim());if(originals.has(el)&&!['soundBtn','pauseSoundBtn'].includes(el.id))el.textContent=tr(originals.get(el),words[originals.get(el)]);}$('langBtn').textContent=tr('PT-BR','EN');}
+  const originals=new WeakMap();
+  function translateUI(){document.documentElement.lang=premium.lang==='pt'?'pt-BR':'en';for(const el of document.querySelectorAll('button,h2,h3,option,[data-i18n],.stat-label,.tagline,.best-badge span,.bossbar-label span,.final-score span,.screen-sub,.small-note,.kicker')){if(!originals.has(el)&&words[el.textContent.trim()])originals.set(el,el.textContent.trim());if(originals.has(el)&&!['soundBtn','pauseSoundBtn'].includes(el.id))el.textContent=tr(originals.get(el),words[originals.get(el)]);}$('langBtn').textContent=tr('PT-BR','EN');for(const [id,en,pt] of [["helpText0", "<b>WASD</b> or <b>arrow keys</b> move your ship.<br/><b>SPACE</b> shoots (or toggle auto-fire with F). <b>ESC</b> pauses.", "<b>WASD</b> ou <b>setas</b> movem a nave.<br><b>ESPAÇO</b> atira (F alterna tiro automático). <b>ESC</b> pausa."], ["helpText1", "Drag your finger across the game area to move.<br/>Shooting is automatic. Use the <b>❚❚</b> button to pause.", "Arraste o dedo pela área do jogo para mover.<br>O tiro é automático. Use <b>❚❚</b> para pausar."], ["helpText2", "<span class=\"dot dot-pink\"></span><b>Scout</b> — flies straight down.", "<span class=\"dot dot-pink\"></span><b>Batedor</b> — voa em linha reta."], ["helpText3", "<span class=\"dot dot-purple\"></span><b>Serpent</b> — moves in a zigzag.", "<span class=\"dot dot-purple\"></span><b>Serpente</b> — move-se em zigue-zague."], ["helpText4", "<span class=\"dot dot-orange\"></span><b>Gunner</b> — aims and fires at you.", "<span class=\"dot dot-orange\"></span><b>Artilheiro</b> — mira e atira em você."], ["helpText5", "<span class=\"pick pick-shield\">S</span><b>Shield</b> — absorbs one hit.", "<span class=\"pick pick-shield\">S</span><b>Escudo</b> — absorve um impacto."], ["helpText6", "<span class=\"pick pick-double\">2</span><b>Double shot</b> — fires two projectiles.", "<span class=\"pick pick-double\">2</span><b>Tiro duplo</b> — dispara dois projéteis."], ["helpText7", "<span class=\"pick pick-rapid\">R</span><b>Rapid fire</b> — increases firing speed.", "<span class=\"pick pick-rapid\">R</span><b>Tiro rápido</b> — aumenta a cadência."], ["helpText8", "The mothership alternates between <b>spread shots</b> and <b>radial bursts</b>. Stay away from the center and dodge through gaps.", "A nave-mãe alterna <b>tiros dispersos</b> e <b>rajadas radiais</b>. Evite o centro e desvie pelas brechas."]]){$(id).innerHTML=tr(en,pt);}renderRecords();for(const [id,en,pt] of [['pauseBtn','Pause','Pausar'],['game','Game area. WASD or arrows to move; Space to shoot.','Área do jogo. WASD ou setas para mover; Espaço para atirar.'],['lives','Remaining lives','Vidas restantes']]){$(id).setAttribute('aria-label',tr(en,pt));}dom.pauseBtn.title=tr('Pause','Pausar');}
   $('langBtn').onclick=()=>{premium.lang=tr('pt','en');savePremium();translateUI();updateSoundUI();};
   const missions=[['hunter','kills',50,35,'Destroy 50 enemies','Destrua 50 inimigos'],['boss','bosses',3,70,'Defeat 3 bosses','Derrote 3 chefes'],['frontier','wave',15,100,'Reach wave 15','Chegue à onda 15'],['elite','wave',30,180,'Reach wave 30','Chegue à onda 30']];
   function missionMenu(){state.mode='missions';showScreen($('missionScreen'));const list=$('missionList');list.replaceChildren();for(const [id,key,target,reward,en,pt] of missions){const d=document.createElement('div');d.className='info-card';const title=document.createElement('h3');title.textContent=tr(en,pt);const p=document.createElement('p');p.textContent=Math.min(progress[key],target)+' / '+target+' · '+reward+' CR';const b=document.createElement('button');b.className='btn btn-small';b.textContent=premium.claimed.includes(id)?tr('CLAIMED','RESGATADO'):tr('CLAIM','RESGATAR');b.disabled=progress[key]<target||premium.claimed.includes(id);b.onclick=()=>{if(b.disabled||premium.claimed.includes(id))return;premium.claimed.push(id);savePremium();earn(reward);missionMenu();};d.append(title,p,b);list.append(d);}translateUI();}
@@ -178,7 +172,7 @@
     if (!iso) return '';
     const date = new Date(iso);
     if (Number.isNaN(date.getTime())) return '';
-    return date.toLocaleDateString('en-US');
+    return date.toLocaleDateString(tr('en-US','pt-BR'));
   }
 
   function refreshMenuBest() {
@@ -191,7 +185,7 @@
     if (!list.length) {
       const empty = document.createElement('li');
       empty.className = 'empty-records';
-      empty.innerHTML = '<span class="big">···</span><span>No high scores yet.<br>Enter the arena and make your mark.</span>';
+      empty.innerHTML = tr('<span class="big">···</span><span>No high scores yet.<br>Enter the arena and make your mark.</span>','<span class="big">···</span><span>Ainda não há recordes.<br>Entre na arena e faça história.</span>');
       dom.recordsList.appendChild(empty);
       return;
     }
@@ -205,7 +199,7 @@
       meta.className = 'record-meta';
       const label = document.createElement('span');
       label.className = 'record-label';
-      label.textContent = index === 0 ? 'TOP PILOT' : 'PILOT';
+      label.textContent = index === 0 ? tr('TOP PILOT','MELHOR PILOTO') : tr('PILOT','PILOTO');
       const date = document.createElement('span');
       date.className = 'record-date';
       date.textContent = formatDate(entry.date) || '—';
@@ -223,7 +217,7 @@
   const mix = {...audioDefaults};
   try {const saved=JSON.parse(localStorage.getItem(audioKey)||'{}');for(const k of Object.keys(mix))if(Number.isFinite(saved[k]))mix[k]=Math.max(0,Math.min(100,saved[k]));}catch(e){}
   const audio = { ctx: null, master: null, muted: false, shotFlip: false, buses:{}, voices:0, noise:null };
-  function applyMix(){if(!audio.master)return;const t=audio.ctx.currentTime;audio.master.gain.setTargetAtTime(audio.muted?0:mix.master/100,t,.015);for(const k of ['music','effects','alerts'])audio.buses[k].gain.setTargetAtTime(mix[k]/100,t,.015);}
+  function applyMix(){if(!audio.master)return;const t=audio.ctx.currentTime;audio.master.gain.setTargetAtTime((audio.muted||document.hidden||window.NSDPlatform?.muted)?0:mix.master/100,t,.015);for(const k of ['music','effects','alerts'])audio.buses[k].gain.setTargetAtTime(mix[k]/100,t,.015);}
   function saveMix(){try{localStorage.setItem(audioKey,JSON.stringify(mix));}catch(e){}applyMix();}
   try {
     audio.muted = localStorage.getItem(MUTE_KEY) === '1';
@@ -238,7 +232,7 @@
       try {
         audio.ctx = new AudioCtor();
         audio.master = audio.ctx.createGain();
-        audio.master.gain.value = audio.muted?0:mix.master/100;
+        audio.master.gain.value = (audio.muted||document.hidden||window.NSDPlatform?.muted)?0:mix.master/100;
         const compressor=audio.ctx.createDynamicsCompressor();compressor.threshold.value=-12;compressor.knee.value=12;compressor.ratio.value=12;compressor.attack.value=.003;compressor.release.value=.12;
         audio.master.connect(compressor);compressor.connect(audio.ctx.destination);
         for(const k of ['music','effects','alerts']){const bus=audio.ctx.createGain();bus.gain.value=mix[k]/100;bus.connect(audio.master);audio.buses[k]=bus;}
@@ -251,7 +245,7 @@
   }
 
   function tone(freq, duration, options = {}) {
-    if (audio.muted) return;
+    if (audio.muted || document.hidden || window.NSDPlatform?.muted) return;
     ensureAudio();
     if (!audio.ctx || !audio.master || audio.voices>=48) return;
     const { type = 'square', volume = 0.05, slide = 0, delay = 0, endFreq = null, bus = 'effects' } = options;
@@ -273,7 +267,7 @@
   }
 
   function noiseBurst(duration, volume = .1, cutoff = 1400, delay = 0, bus='effects') {
-    if(audio.muted)return;ensureAudio();if(!audio.ctx||!audio.noise||audio.voices>=48)return;
+    if(audio.muted||document.hidden||window.NSDPlatform?.muted)return;ensureAudio();if(!audio.ctx||!audio.noise||audio.voices>=48)return;
     const t=audio.ctx.currentTime+delay, source=audio.ctx.createBufferSource(), filter=audio.ctx.createBiquadFilter(), gain=audio.ctx.createGain();
     source.buffer=audio.noise;filter.type='lowpass';filter.frequency.value=cutoff;
     gain.gain.setValueAtTime(Math.min(.55,volume*4),t);gain.gain.exponentialRampToValueAtTime(.0001,t+duration);
@@ -359,8 +353,8 @@
     dom.soundBtn.textContent = label;
     dom.pauseSoundBtn.textContent = label;
     dom.hudSoundBtn.textContent = audio.muted ? '×' : '♪';
-    dom.hudSoundBtn.setAttribute('aria-label', audio.muted ? 'Enable sound' : 'Mute sound');
-    dom.hudSoundBtn.title = audio.muted ? 'Enable sound' : 'Mute sound';
+    dom.hudSoundBtn.setAttribute('aria-label', audio.muted ? tr('Enable sound','Ativar som') : tr('Mute sound','Silenciar'));
+    dom.hudSoundBtn.title = audio.muted ? tr('Enable sound','Ativar som') : tr('Mute sound','Silenciar');
   }
 
   function setMuted(muted, withSound = false) {
@@ -702,7 +696,7 @@
       }
       if (active && chip) {
         const seconds = Math.ceil(state.power[type]);
-        chip.label.textContent = powerMeta[type].label + ' ' + seconds + 's';
+        chip.label.textContent = localize(powerMeta[type].label) + ' ' + seconds + 's';
         chip.fill.style.width = clamp((state.power[type] / 12) * 100, 0, 100) + '%';
       }
     }
@@ -725,8 +719,8 @@
   }
 
   function showBanner(title, subtitle, warn = false, duration = 1.6) {
-    dom.bannerTitle.textContent = title;
-    dom.bannerSub.textContent = subtitle || '';
+    dom.bannerTitle.textContent = localize(title);
+    dom.bannerSub.textContent = localize(subtitle || '');
     dom.banner.classList.remove('hidden');
     dom.banner.classList.toggle('warn', !!warn);
     dom.banner.style.animation = 'none';
@@ -1158,7 +1152,7 @@
 
   function spawnBoss() {
     const maxHp = Math.round((70 + state.wave * 8)*difficulty());
-    document.querySelector('.bossbar-label span').textContent=['MOTHERSHIP','INFERNO','GLACIER','WRAITH','SUN EATER'][(Math.floor(state.wave/5)-1+5)%5];
+    document.querySelector('.bossbar-label span').textContent=localize(['MOTHERSHIP','INFERNO','GLACIER','WRAITH','SUN EATER'][(Math.floor(state.wave/5)-1+5)%5]);
     state.boss = {
       x: W / 2, y: -110, targetY: 225, age: 0, t: 0,
       hp: maxHp, maxHp, r: 58, entering: true, dead: false,
@@ -1392,7 +1386,7 @@
     const labels = { shield: 'SHIELD ACTIVE', double: 'DOUBLE SHOT', rapid: 'RAPID FIRE' };
     const colors = { shield: '#6dffc0', double: '#ff9ecb', rapid: '#cfb1ff' };
     const p = state.player;
-    addFloater(labels[type], p.x, p.y - 46, colors[type], 14);
+    addFloater(localize(labels[type]), p.x, p.y - 46, colors[type], 14);
     addRing(p.x, p.y, colors[type], 58, 0.5);
     explode(p.x, p.y, 16, colors[type], false);
     state.flash = 0.16;
@@ -1409,7 +1403,7 @@
       p.shieldFlash = 0.4;
       state.flash = 0.24;
       state.flashColor = '#6dffc0';
-      addFloater('SHIELD BROKEN', p.x, p.y - 40, '#6dffc0', 13);
+      addFloater(localize('SHIELD BROKEN'), p.x, p.y - 40, '#6dffc0', 13);
       explode(p.x, p.y, 22, '#6dffc0', false);
       Sound.shieldBreak();
       return;
@@ -1446,13 +1440,13 @@
     const placement = addRecord(state.score);
     dom.finalScore.textContent = padScore(state.score);
     if (placement === 1) {
-      dom.recordNotice.textContent = 'NEW HIGH SCORE!';
+      dom.recordNotice.textContent = tr('NEW HIGH SCORE!','NOVO RECORDE!');
       Sound.record();
     } else if (placement > 0) {
-      dom.recordNotice.textContent = 'YOU MADE THE TOP 5 · #' + placement;
+      dom.recordNotice.textContent = tr('YOU MADE THE TOP 5 · #','VOCÊ ENTROU NO TOP 5 · #') + placement;
       Sound.record();
     } else {
-      dom.recordNotice.textContent = 'KEEP TRYING, PILOT';
+      dom.recordNotice.textContent = tr('KEEP TRYING, PILOT','CONTINUE TENTANDO, PILOTO');
     }
     setHudVisible(false);
     dom.bossbar.classList.add('hidden');
@@ -1758,6 +1752,7 @@
     if (state.mode !== 'playing') return;
     window.NSDPlatform?.stop();savePlatinum();
     state.mode = 'paused';
+    drag=null;
     state.keys = Object.create(null);
     showScreen(dom.pauseScreen);
     updateSoundUI();
@@ -1767,6 +1762,7 @@
   function resumeGame() {
     if (state.mode !== 'paused') return;
     state.mode = 'playing';
+    ensureAudio();
     window.NSDPlatform?.start();
     showScreen(null);
     Sound.ui();
@@ -1777,6 +1773,7 @@
   let lastTime = 0, fpsValue=0, frames=0, fpsStart=0;
 
   function frame(timestamp) {
+    if(document.hidden){lastTime=0;fpsStart=0;frames=0;requestAnimationFrame(frame);return;}
     if (!fpsStart) fpsStart=timestamp; frames++; if(timestamp-fpsStart>=1000){fpsValue=Math.round(frames*1000/(timestamp-fpsStart));frames=0;fpsStart=timestamp; $('fpsReadout').textContent=fpsValue+' FPS';}
     if (!lastTime) lastTime = timestamp;
     let dt = (timestamp - lastTime) / 1000;
@@ -1879,6 +1876,8 @@
 
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && state.mode === 'playing') pauseGame();
+    drag=null;state.keys=Object.create(null);lastTime=0;fpsStart=0;frames=0;applyMix();
+    if(document.hidden)audio.ctx?.suspend().catch(()=>{});
   });
 
   canvas.addEventListener('pointerdown', (event) => {
@@ -1912,7 +1911,7 @@
   canvas.addEventListener('lostpointercapture', endDrag);
 
   document.addEventListener('touchmove', (event) => {
-    if (!event.target.closest || !event.target.closest('.scroll-panel')) {
+    if (!event.target.closest || !event.target.closest('.scroll-panel, #audioDialog')) {
       event.preventDefault();
     }
   }, { passive: false });
@@ -1921,53 +1920,11 @@
     if (event.target.closest && event.target.closest('#shell')) event.preventDefault();
   });
 
-  function snapshot() {
-    return {
-      mode: state.mode,
-      score: state.score,
-      lives: state.lives,
-      wave: state.wave,
-      enemies: state.enemies.length,
-      enemyTypes: state.enemies.map((enemy) => enemy.type),
-      bullets: state.bullets.length,
-      enemyBullets: state.enemyBullets.length,
-      pickups: state.pickups.map((item) => item.type),
-      boss: state.boss ? {
-        hp: state.boss.hp,
-        maxHp: state.boss.maxHp,
-        dead: state.boss.dead,
-        entering: state.boss.entering,
-        shootTimer: Number(state.boss.shootTimer.toFixed(2)),
-        pattern: state.boss.pattern,
-        x: Math.round(state.boss.x),
-        y: Math.round(state.boss.y)
-      } : null,
-      player: state.player ? {
-        x: Math.round(state.player.x),
-        y: Math.round(state.player.y),
-        invuln: Number(state.player.invuln.toFixed(2))
-      } : null,
-      power: {
-        shield: Number(state.power.shield.toFixed(2)),
-        double: Number(state.power.double.toFixed(2)),
-        rapid: Number(state.power.rapid.toFixed(2))
-      },
-      autofire: state.autofire,
-      records: readRecords(),
-      hudVisible: !dom.hud.classList.contains('hidden'),
-      bossbarVisible: !dom.bossbar.classList.contains('hidden'),
-      pauseVisible: !dom.pauseScreen.classList.contains('hidden'),
-      gameoverVisible: !dom.gameoverScreen.classList.contains('hidden'),
-      bannerVisible: !dom.banner.classList.contains('hidden'),
-      bannerText: dom.bannerTitle.textContent,
-      finalScore: dom.finalScore.textContent,
-      recordNotice: dom.recordNotice.textContent
-    };
-  }
-
   window.addEventListener('pagehide',()=>{savePlatinum();saveProfile();savePremium();saveProgress();window.NSDPlatform?.stop();});
+  window.addEventListener('nsd-platform-audio',applyMix);
+  window.NSDPlatform?.loaded();
   translateUI();
-  window.NSD = {version:'3.3.2',get fps(){return fpsValue;}};
+  window.NSD = {version:'3.3.3',get fps(){return fpsValue;}};
   updateSoundUI();
   refreshMenuBest();
   renderRecords();

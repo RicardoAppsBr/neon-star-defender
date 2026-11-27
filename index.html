@@ -1,165 +1,155 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#05030f">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Neon Star Defender</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<meta content="#05030f" name="theme-color"/>
+<meta content="yes" name="mobile-web-app-capable"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<title>Neon Star Defender</title>
+<link href="style.css" rel="stylesheet"/>
 </head>
 <body>
-  <div class="app">
-    <main class="shell" id="shell" aria-label="Neon Star Defender">
-      <canvas id="game" width="480" height="800" aria-label="Game area. Use WASD or arrow keys to move and Space to shoot."></canvas>
-      <div class="scr-effect" aria-hidden="true"></div>
-
-      <div class="hud hidden" id="hud">
-        <div class="hud-top">
-          <div class="stat">
-            <span class="stat-label">SCORE</span>
-            <span class="stat-value" id="score">0</span>
-          </div>
-          <div class="stat stat-center">
-            <span class="stat-label">WAVE</span>
-            <span class="stat-value" id="wave">1</span>
-          </div>
-          <div class="hud-right">
-            <div class="lives" id="lives" aria-label="Remaining lives"></div>
-            <div class="hud-buttons">
-              <button class="icon-btn" id="hudSoundBtn" type="button" aria-label="Mute sound" title="Sound">♪</button>
-              <button class="icon-btn pause-btn" id="pauseBtn" type="button" aria-label="Pause" title="Pause"><span class="pause-icon" aria-hidden="true"><i></i><i></i></span></button>
-            </div>
-          </div>
-        </div>
-
-        <button id="abilityBtn" class="btn btn-small ability">PULSE · READY</button><div id="trainingHint" class="training-hint hidden"></div><span id="fpsReadout" class="fps-readout"></span><div id="runStats" class="run-stats"></div>
-        <div class="powerups" id="powerups" aria-live="polite"></div>
-
-        <div class="bossbar hidden" id="bossbar">
-          <div class="bossbar-label"><span>MOTHERSHIP</span><span id="bossHpText">100%</span></div>
-          <div class="bossbar-track"><div class="bossbar-fill" id="bossHp"></div></div>
-        </div>
-
-        <div class="banner hidden" id="banner" aria-live="polite">
-          <span class="banner-title" id="bannerTitle"></span>
-          <span class="banner-sub" id="bannerSub"></span>
-        </div>
-      </div>
-
-      <section class="screen menu-screen" id="menuScreen">
-        <div class="menu-top"><div class="premium-orbit" aria-hidden="true"></div>
-          <div class="kicker">ARCADE // SECTOR 7</div>
-          <h1 class="logo" aria-label="Neon Star Defender">
-            <span class="logo-neon">NEON</span>
-            <span class="logo-star">STAR</span>
-            <span class="logo-def">DEFENDER</span>
-          </h1>
-          <p class="tagline">Break the blockade. Defend the galaxy.</p>
-        </div>
-
-        <div class="menu-mid">
-          <div class="best-badge">
-            <span>HIGH SCORE</span>
-            <strong id="menuBest">000000</strong>
-          </div>
-          <nav class="menu-actions" aria-label="Main menu">
-            <label class="difficulty-label"><span data-i18n>DIFFICULTY</span> <select id="difficulty"><option value="0.8">EASY</option><option value="1" selected>NORMAL</option><option value="1.25">HARD</option></select></label><button class="btn btn-primary" id="playBtn" type="button">PLAY</button>
-            <button class="btn" id="missionBtn">MISSIONS</button><button class="btn" id="trainingBtn">TRAINING</button><button class="btn" id="hangarBtn" type="button">HANGAR</button>
-            <button class="btn" id="howtoBtn" type="button">HOW TO PLAY</button>
-            <button class="btn" id="achBtn" type="button">ACHIEVEMENTS</button><button class="btn" id="recordsBtn" type="button">HIGH SCORES</button>
-          </nav>
-        </div>
-
-        <div class="menu-footer">
-          <button class="btn btn-ghost btn-small" id="soundBtn" type="button">SOUND: ON</button>
-          <button class="btn btn-small" id="audioMenuBtn" type="button">AUDIO</button><button class="btn btn-small" id="platinumBtn">PILOT HQ</button><button class="btn btn-small" id="langBtn">PT-BR</button><span class="version">v3.3.2 · AUDIO ENHANCEMENT</span>
-        </div>
-      </section>
-
-      <section class="screen panel-screen hidden" id="platinumScreen"><div class="panel-head"><h2 class="screen-title">PILOT HQ</h2></div><div class="scroll-panel" id="platinumList"></div><div class="panel-actions"><button class="btn btn-primary" id="platinumBack">BACK</button></div></section><section class="screen panel-screen hidden" id="missionScreen"><div class="panel-head"><h2 class="screen-title">MISSIONS</h2></div><div class="scroll-panel" id="missionList"></div><div class="panel-actions"><button class="btn btn-primary" id="missionBack">BACK</button></div></section><section class="screen panel-screen hidden" id="achScreen"><div class="panel-head"><h2 class="screen-title">ACHIEVEMENTS</h2><p class="screen-sub">30 career milestones</p></div><div class="scroll-panel" id="achList"></div><div class="panel-actions"><button class="btn btn-primary" id="achBack">BACK</button></div></section><section class="screen panel-screen hidden" id="hangarScreen"><div class="panel-head"><h2 class="screen-title">HANGAR</h2><p id="credits" class="screen-sub"></p></div><div class="scroll-panel" id="shipList"></div><div class="panel-actions"><button class="btn btn-primary" id="hangarBack">BACK</button></div></section>
-      <section class="screen panel-screen hidden" id="howtoScreen">
-        <div class="panel-head">
-          <h2 class="screen-title">HOW TO PLAY</h2>
-          <p class="screen-sub">Survive enemy waves. A mothership appears every 5 waves. Chain kills to multiply points. Earn credits and unlock ships in the hangar.</p>
-        </div>
-        <div class="scroll-panel">
-          <div class="info-card">
-            <h3>DESKTOP</h3>
-            <p><b>WASD</b> or <b>arrow keys</b> move your ship.<br><b>SPACE</b> shoots (or toggle auto-fire with F). <b>ESC</b> pauses.</p>
-          </div>
-          <div class="info-card">
-            <h3>MOBILE</h3>
-            <p>Drag your finger across the game area to move.<br>Shooting is automatic. Use the <b>❚❚</b> button to pause.</p>
-          </div>
-          <div class="info-card">
-            <h3>ENEMIES</h3>
-            <ul class="enemy-list">
-              <li><span class="dot dot-pink"></span><b>Scout</b> — flies straight down.</li>
-              <li><span class="dot dot-purple"></span><b>Serpent</b> — moves in a zigzag.</li>
-              <li><span class="dot dot-orange"></span><b>Gunner</b> — aims and fires at you.</li>
-            </ul>
-          </div>
-          <div class="info-card">
-            <h3>TEMPORARY POWER-UPS</h3>
-            <ul class="enemy-list">
-              <li><span class="pick pick-shield">S</span><b>Shield</b> — absorbs one hit.</li>
-              <li><span class="pick pick-double">2</span><b>Double shot</b> — fires two projectiles.</li>
-              <li><span class="pick pick-rapid">R</span><b>Rapid fire</b> — increases firing speed.</li>
-            </ul>
-          </div>
-          <div class="info-card">
-            <h3>BOSSES</h3>
-            <p>The mothership alternates between <b>spread shots</b> and <b>radial bursts</b>. Stay away from the center and dodge through gaps.</p>
-          </div>
-          <p class="small-note">The top 5 scores are saved in this browser.</p>
-        </div>
-        <div class="panel-actions">
-          <button class="btn btn-primary" id="howtoBackBtn" type="button">BACK</button>
-        </div>
-      </section>
-
-      <section class="screen panel-screen hidden" id="recordsScreen">
-        <div class="panel-head">
-          <h2 class="screen-title">HIGH SCORES</h2>
-          <p class="screen-sub">The top five pilots on this browser.</p>
-        </div>
-        <ol class="records-list" id="recordsList"></ol>
-        <div class="panel-actions">
-          <button class="btn btn-primary" id="recordsBackBtn" type="button">BACK</button>
-        </div>
-      </section>
-
-      <section class="screen overlay-screen hidden" id="pauseScreen">
-        <h2 class="screen-title">PAUSED</h2>
-        <p class="screen-sub">The battle is waiting for you.</p>
-        <div class="menu-actions compact">
-          <button class="btn btn-primary" id="resumeBtn" type="button">RESUME</button>
-          <button class="btn" id="restartBtn" type="button">RESTART</button>
-          <button class="btn" id="pauseSoundBtn" type="button">SOUND: ON</button>
-          <button class="btn" id="audioPauseBtn" type="button">AUDIO</button><button class="btn btn-ghost" id="pauseMenuBtn" type="button">MENU</button>
-        </div>
-      </section>
-
-      <section class="screen overlay-screen hidden" id="gameoverScreen">
-        <p class="kicker danger">SIGNAL LOST</p>
-        <h2 class="screen-title gameover-title">GAME OVER</h2>
-        <div class="final-score">
-          <span>FINAL SCORE</span>
-          <strong id="finalScore">0</strong>
-          <span id="recordNotice" class="record-notice"></span>
-        </div>
-        <div class="menu-actions compact">
-          <button class="btn btn-primary" id="retryBtn" type="button">PLAY AGAIN</button>
-          <button class="btn" id="gameoverMenuBtn" type="button">BACK TO MENU</button>
-        </div>
-      </section>
-    </main>
-  </div>
-<dialog id="audioDialog"><h2 id="audioTitle">Audio settings</h2><label for="mix-master"><span id="label-master">master</span> <output id="value-master"></output></label><input type="range" min="0" max="100" step="1" id="mix-master"><label for="mix-music"><span id="label-music">music</span> <output id="value-music"></output></label><input type="range" min="0" max="100" step="1" id="mix-music"><label for="mix-effects"><span id="label-effects">effects</span> <output id="value-effects"></output></label><input type="range" min="0" max="100" step="1" id="mix-effects"><label for="mix-alerts"><span id="label-alerts">alerts</span> <output id="value-alerts"></output></label><input type="range" min="0" max="100" step="1" id="mix-alerts"><div class="audio-tests"><button type="button" class="btn btn-small" data-sound-test="standard">Laser</button><button type="button" class="btn btn-small" data-sound-test="rail">Rail</button><button type="button" class="btn btn-small" data-sound-test="storm">Storm</button><button type="button" class="btn btn-small" data-sound-test="pulse">Pulse</button><button type="button" class="btn btn-small" data-sound-test="explode">Explosion</button><button type="button" class="btn btn-small" data-sound-test="bigExplode">Boss explosion</button><button type="button" class="btn btn-small" data-sound-test="playerHit">Damage</button><button type="button" class="btn btn-small" data-sound-test="waveStart">Wave</button><button type="button" class="btn btn-small" data-sound-test="alarm">Alarm</button><button type="button" class="btn btn-small" data-sound-test="music">Music</button></div><button class="btn" id="audioMute">Mute sound</button><button class="btn" id="audioReset">Restore defaults</button><button class="btn btn-primary" id="audioClose">Close</button></dialog>
-  <script src="crazy-adapter.js"></script>
-  <script src="script.js"></script>
+<div class="app">
+<main aria-label="Neon Star Defender" class="shell" id="shell">
+<canvas aria-label="Game area. Use WASD or arrow keys to move and Space to shoot." height="800" id="game" width="480"></canvas>
+<div aria-hidden="true" class="scr-effect"></div>
+<div class="hud hidden" id="hud">
+<div class="hud-top">
+<div class="stat">
+<span class="stat-label">SCORE</span>
+<span class="stat-value" id="score">0</span>
+</div>
+<div class="stat stat-center">
+<span class="stat-label">WAVE</span>
+<span class="stat-value" id="wave">1</span>
+</div>
+<div class="hud-right">
+<div aria-label="Remaining lives" class="lives" id="lives"></div>
+<div class="hud-buttons">
+<button aria-label="Mute sound" class="icon-btn" id="hudSoundBtn" title="Sound" type="button">♪</button>
+<button aria-label="Pause" class="icon-btn pause-btn" id="pauseBtn" title="Pause" type="button"><span aria-hidden="true" class="pause-icon"><i></i><i></i></span></button>
+</div>
+</div>
+</div>
+<button class="btn btn-small ability" id="abilityBtn">PULSE · READY</button><div class="training-hint hidden" id="trainingHint"></div><span class="fps-readout" id="fpsReadout"></span><div class="run-stats" id="runStats"></div>
+<div aria-live="polite" class="powerups" id="powerups"></div>
+<div class="bossbar hidden" id="bossbar">
+<div class="bossbar-label"><span>MOTHERSHIP</span><span id="bossHpText">100%</span></div>
+<div class="bossbar-track"><div class="bossbar-fill" id="bossHp"></div></div>
+</div>
+<div aria-live="polite" class="banner hidden" id="banner">
+<span class="banner-title" id="bannerTitle"></span>
+<span class="banner-sub" id="bannerSub"></span>
+</div>
+</div>
+<section class="screen menu-screen" id="menuScreen">
+<div class="menu-top"><div aria-hidden="true" class="premium-orbit"></div>
+<div class="kicker">ARCADE // SECTOR 7</div>
+<h1 aria-label="Neon Star Defender" class="logo">
+<span class="logo-neon">NEON</span>
+<span class="logo-star">STAR</span>
+<span class="logo-def">DEFENDER</span>
+</h1>
+<p class="tagline">Break the blockade. Defend the galaxy.</p>
+</div>
+<div class="menu-mid">
+<div class="best-badge">
+<span>HIGH SCORE</span>
+<strong id="menuBest">000000</strong>
+</div>
+<nav aria-label="Main menu" class="menu-actions">
+<label class="difficulty-label"><span data-i18n="">DIFFICULTY</span> <select id="difficulty"><option value="0.8">EASY</option><option selected="" value="1">NORMAL</option><option value="1.25">HARD</option></select></label><button class="btn btn-primary" id="playBtn" type="button">PLAY</button>
+<button class="btn" id="missionBtn">MISSIONS</button><button class="btn" id="trainingBtn">TRAINING</button><button class="btn" id="hangarBtn" type="button">HANGAR</button>
+<button class="btn" id="howtoBtn" type="button">HOW TO PLAY</button>
+<button class="btn" id="achBtn" type="button">ACHIEVEMENTS</button><button class="btn" id="recordsBtn" type="button">HIGH SCORES</button>
+</nav>
+</div>
+<div class="menu-footer">
+<button class="btn btn-ghost btn-small" id="soundBtn" type="button">SOUND: ON</button>
+<button class="btn btn-small" id="audioMenuBtn" type="button">AUDIO</button><button class="btn btn-small" id="platinumBtn">PILOT HQ</button><button class="btn btn-small" id="langBtn">PT-BR</button><span class="version">v3.3.3 · FINAL RELEASE</span>
+</div>
+</section>
+<section class="screen panel-screen hidden" id="platinumScreen"><div class="panel-head"><h2 class="screen-title">PILOT HQ</h2></div><div class="scroll-panel" id="platinumList"></div><div class="panel-actions"><button class="btn btn-primary" id="platinumBack">BACK</button></div></section><section class="screen panel-screen hidden" id="missionScreen"><div class="panel-head"><h2 class="screen-title">MISSIONS</h2></div><div class="scroll-panel" id="missionList"></div><div class="panel-actions"><button class="btn btn-primary" id="missionBack">BACK</button></div></section><section class="screen panel-screen hidden" id="achScreen"><div class="panel-head"><h2 class="screen-title">ACHIEVEMENTS</h2><p class="screen-sub">30 career milestones</p></div><div class="scroll-panel" id="achList"></div><div class="panel-actions"><button class="btn btn-primary" id="achBack">BACK</button></div></section><section class="screen panel-screen hidden" id="hangarScreen"><div class="panel-head"><h2 class="screen-title">HANGAR</h2><p class="screen-sub" id="credits"></p></div><div class="scroll-panel" id="shipList"></div><div class="panel-actions"><button class="btn btn-primary" id="hangarBack">BACK</button></div></section>
+<section class="screen panel-screen hidden" id="howtoScreen">
+<div class="panel-head">
+<h2 class="screen-title">HOW TO PLAY</h2>
+<p class="screen-sub">Survive enemy waves. A mothership appears every 5 waves. Chain kills to multiply points. Earn credits and unlock ships in the hangar.</p>
+</div>
+<div class="scroll-panel">
+<div class="info-card">
+<h3>DESKTOP</h3>
+<p id="helpText0"><b>WASD</b> or <b>arrow keys</b> move your ship.<br/><b>SPACE</b> shoots (or toggle auto-fire with F). <b>ESC</b> pauses.</p>
+</div>
+<div class="info-card">
+<h3>MOBILE</h3>
+<p id="helpText1">Drag your finger across the game area to move.<br/>Shooting is automatic. Use the <b>❚❚</b> button to pause.</p>
+</div>
+<div class="info-card">
+<h3>ENEMIES</h3>
+<ul class="enemy-list">
+<li id="helpText2"><span class="dot dot-pink"></span><b>Scout</b> — flies straight down.</li>
+<li id="helpText3"><span class="dot dot-purple"></span><b>Serpent</b> — moves in a zigzag.</li>
+<li id="helpText4"><span class="dot dot-orange"></span><b>Gunner</b> — aims and fires at you.</li>
+</ul>
+</div>
+<div class="info-card">
+<h3>TEMPORARY POWER-UPS</h3>
+<ul class="enemy-list">
+<li id="helpText5"><span class="pick pick-shield">S</span><b>Shield</b> — absorbs one hit.</li>
+<li id="helpText6"><span class="pick pick-double">2</span><b>Double shot</b> — fires two projectiles.</li>
+<li id="helpText7"><span class="pick pick-rapid">R</span><b>Rapid fire</b> — increases firing speed.</li>
+</ul>
+</div>
+<div class="info-card">
+<h3>BOSSES</h3>
+<p id="helpText8">The mothership alternates between <b>spread shots</b> and <b>radial bursts</b>. Stay away from the center and dodge through gaps.</p>
+</div>
+<p class="small-note">The top 5 scores are saved in this browser.</p>
+</div>
+<div class="panel-actions">
+<button class="btn btn-primary" id="howtoBackBtn" type="button">BACK</button>
+</div>
+</section>
+<section class="screen panel-screen hidden" id="recordsScreen">
+<div class="panel-head">
+<h2 class="screen-title">HIGH SCORES</h2>
+<p class="screen-sub">The top five pilots on this browser.</p>
+</div>
+<ol class="records-list" id="recordsList"></ol>
+<div class="panel-actions">
+<button class="btn btn-primary" id="recordsBackBtn" type="button">BACK</button>
+</div>
+</section>
+<section class="screen overlay-screen hidden" id="pauseScreen">
+<h2 class="screen-title">PAUSED</h2>
+<p class="screen-sub">The battle is waiting for you.</p>
+<div class="menu-actions compact">
+<button class="btn btn-primary" id="resumeBtn" type="button">RESUME</button>
+<button class="btn" id="restartBtn" type="button">RESTART</button>
+<button class="btn" id="pauseSoundBtn" type="button">SOUND: ON</button>
+<button class="btn" id="audioPauseBtn" type="button">AUDIO</button><button class="btn btn-ghost" id="pauseMenuBtn" type="button">MENU</button>
+</div>
+</section>
+<section class="screen overlay-screen hidden" id="gameoverScreen">
+<p class="kicker danger">SIGNAL LOST</p>
+<h2 class="screen-title gameover-title">GAME OVER</h2>
+<div class="final-score">
+<span>FINAL SCORE</span>
+<strong id="finalScore">0</strong>
+<span class="record-notice" id="recordNotice"></span>
+</div>
+<div class="menu-actions compact">
+<button class="btn btn-primary" id="retryBtn" type="button">PLAY AGAIN</button>
+<button class="btn" id="gameoverMenuBtn" type="button">BACK TO MENU</button>
+</div>
+</section>
+</main>
+</div>
+<dialog id="audioDialog"><h2 id="audioTitle">Audio settings</h2><label for="mix-master"><span id="label-master">master</span> <output id="value-master"></output></label><input id="mix-master" max="100" min="0" step="1" type="range"/><label for="mix-music"><span id="label-music">music</span> <output id="value-music"></output></label><input id="mix-music" max="100" min="0" step="1" type="range"/><label for="mix-effects"><span id="label-effects">effects</span> <output id="value-effects"></output></label><input id="mix-effects" max="100" min="0" step="1" type="range"/><label for="mix-alerts"><span id="label-alerts">alerts</span> <output id="value-alerts"></output></label><input id="mix-alerts" max="100" min="0" step="1" type="range"/><div class="audio-tests"><button class="btn btn-small" data-sound-test="standard" type="button">Laser</button><button class="btn btn-small" data-sound-test="rail" type="button">Rail</button><button class="btn btn-small" data-sound-test="storm" type="button">Storm</button><button class="btn btn-small" data-sound-test="pulse" type="button">Pulse</button><button class="btn btn-small" data-sound-test="explode" type="button">Explosion</button><button class="btn btn-small" data-sound-test="bigExplode" type="button">Boss explosion</button><button class="btn btn-small" data-sound-test="playerHit" type="button">Damage</button><button class="btn btn-small" data-sound-test="waveStart" type="button">Wave</button><button class="btn btn-small" data-sound-test="alarm" type="button">Alarm</button><button class="btn btn-small" data-sound-test="music" type="button">Music</button></div><button class="btn" id="audioMute">Mute sound</button><button class="btn" id="audioReset">Restore defaults</button><button class="btn btn-primary" id="audioClose">Close</button></dialog>
+<script src="crazy-adapter.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
