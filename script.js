@@ -62,11 +62,11 @@
   try { const v=JSON.parse(localStorage.getItem(profileKey)); if(v && Number.isFinite(v.credits) && Array.isArray(v.owned)) { profile={credits:Math.max(0,Math.floor(v.credits)),owned:[0,...v.owned.filter(i=>Number.isInteger(i)&&i>0&&i<fleet.length)],selected:0}; if(profile.owned.includes(v.selected)) profile.selected=v.selected; } } catch(e){}
   function saveProfile(){try{localStorage.setItem(profileKey,JSON.stringify(profile));}catch(e){}}
   function earn(n){profile.credits+=n;saveProfile();}
-  function hangar(){state.mode='hangar';showScreen($('hangarScreen'));$('credits').textContent=profile.credits+' CREDITS • Earn credits by defeating enemies';const list=$('shipList');list.replaceChildren();fleet.forEach((ship,i)=>{const card=document.createElement('div');card.className='info-card ship-card';const title=document.createElement('h3');title.textContent=ship.name;title.style.color=ship.tint;const desc=document.createElement('p');desc.textContent=ship.desc;const b=document.createElement('button');b.className='btn btn-small';b.textContent=profile.selected===i?'EQUIPPED':profile.owned.includes(i)?'EQUIP':'UNLOCK • '+ship.cost;b.disabled=profile.selected===i||(!profile.owned.includes(i)&&profile.credits<ship.cost);b.onclick=()=>{if(!profile.owned.includes(i)){if(profile.credits<ship.cost)return;profile.credits-=ship.cost;profile.owned.push(i);}profile.selected=i;saveProfile();hangar();};const preview=document.createElement('canvas');preview.width=96;preview.height=96;preview.className='ship-preview';const pc=preview.getContext('2d');pc.imageSmoothingEnabled=false;pc.drawImage(shipArt[i].canvas,12,12,72,72);const up=document.createElement('button');up.className='btn btn-small';const level=premium.levels[i],price=80*(level+1);up.textContent=level===3?tr('MAX LEVEL','NÍVEL MÁXIMO'):tr('UPGRADE','EVOLUIR')+' '+(level+1)+' · '+price+' CR';up.disabled=level===3||!profile.owned.includes(i)||profile.credits<price;up.onclick=()=>{if(up.disabled)return;profile.credits-=price;premium.levels[i]++;saveProfile();savePremium();hangar();};card.append(preview,title,desc,b,up);list.append(card);});}
+  function hangar(){state.mode='hangar';showScreen($('hangarScreen'));$('credits').textContent=profile.credits+tr(' CREDITS • Earn credits by defeating enemies',' CRÉDITOS • Ganhe créditos derrotando inimigos');const list=$('shipList');list.replaceChildren();fleet.forEach((ship,i)=>{const card=document.createElement('div');card.className='info-card ship-card';const title=document.createElement('h3');title.textContent=ship.name;title.style.color=ship.tint;const desc=document.createElement('p');desc.textContent=tr(ship.desc,['Caça equilibrado','Interceptador veloz • tiro rápido','Caça pesado • dano duplo','Canhões duplos de plasma','Canhão triplo disperso','Pulso duplo pesado'][i]);const b=document.createElement('button');b.className='btn btn-small';b.textContent=profile.selected===i?tr('EQUIPPED','EQUIPADA'):profile.owned.includes(i)?tr('EQUIP','EQUIPAR'):tr('UNLOCK','DESBLOQUEAR')+' • '+ship.cost;b.disabled=profile.selected===i||(!profile.owned.includes(i)&&profile.credits<ship.cost);b.onclick=()=>{if(!profile.owned.includes(i)){if(profile.credits<ship.cost)return;profile.credits-=ship.cost;profile.owned.push(i);}profile.selected=i;saveProfile();hangar();};const preview=document.createElement('canvas');preview.width=96;preview.height=96;preview.className='ship-preview';const pc=preview.getContext('2d');pc.imageSmoothingEnabled=false;pc.drawImage(shipArt[i].canvas,12,12,72,72);const up=document.createElement('button');up.className='btn btn-small';const level=premium.levels[i],price=80*(level+1);up.textContent=level===3?tr('MAX LEVEL','NÍVEL MÁXIMO'):tr('UPGRADE','EVOLUIR')+' '+(level+1)+' · '+price+' CR';up.disabled=level===3||!profile.owned.includes(i)||profile.credits<price;up.onclick=()=>{if(up.disabled)return;profile.credits-=price;premium.levels[i]++;saveProfile();savePremium();hangar();};card.append(preview,title,desc,b,up);list.append(card);});}
   $('hangarBtn').onclick=hangar; $('hangarBack').onclick=()=>goMenu();
   let progress={kills:0,bosses:0,wave:0};try{Object.assign(progress,JSON.parse(localStorage.getItem('nsd31.progress')||'{}'));}catch(e){}
   function saveProgress(){try{localStorage.setItem('nsd31.progress',JSON.stringify(progress));}catch(e){}}
-  $('achBtn').onclick=()=>{state.mode='achievements';showScreen($('achScreen'));const list=$('achList');list.replaceChildren();for(const [name,key,steps] of [['Enemy hunter','kills',[10,25,50,100,200,350,500,750,1000,2000]],['Boss breaker','bosses',[1,2,3,5,8,10,15,20,30,50]],['Explorer','wave',[2,3,5,8,10,15,20,25,30,50]]])for(const n of steps){const d=document.createElement('div');d.className='info-card';d.textContent=(progress[key]>=n?'✓ ':'○ ')+name+' '+n+' — '+Math.min(progress[key],n)+'/'+n;list.append(d);}};
+  $('achBtn').onclick=()=>{state.mode='achievements';showScreen($('achScreen'));const list=$('achList');list.replaceChildren();for(const [name,key,steps] of [['Enemy hunter','kills',[10,25,50,100,200,350,500,750,1000,2000]],['Boss breaker','bosses',[1,2,3,5,8,10,15,20,30,50]],['Explorer','wave',[2,3,5,8,10,15,20,25,30,50]]])for(const n of steps){const d=document.createElement('div');d.className='info-card';d.textContent=(progress[key]>=n?'✓ ':'○ ')+tr(name,{'Enemy hunter':'Caçador de inimigos','Boss breaker':'Destruidor de chefes','Explorer':'Explorador'}[name])+' '+n+' — '+Math.min(progress[key],n)+'/'+n;list.append(d);}};
   $('achBack').onclick=()=>goMenu();
   const sectors=['ORION GATE','CRIMSON RIFT','FROZEN NEBULA','VOID FRONTIER'];
   let combo=0,comboTime=0,runCredits=0,musicClock=0,musicStep=0;
@@ -76,7 +76,7 @@
   try {const q=JSON.parse(localStorage.getItem(premiumKey)||'{}');if(Array.isArray(q.levels))premium.levels=premium.levels.map((_,i)=>Math.max(0,Math.min(3,Math.floor(Number(q.levels[i])||0))));if(Array.isArray(q.claimed))premium.claimed=q.claimed.filter(x=>typeof x==='string');if(q.lang==='pt')premium.lang='pt';}catch(e){}
   function savePremium(){try{localStorage.setItem(premiumKey,JSON.stringify(premium));}catch(e){}}
   const tr=(en,pt)=>premium.lang==='pt'?pt:en;
-  const words={'PLAY':'JOGAR','HANGAR':'HANGAR','HOW TO PLAY':'COMO JOGAR','ACHIEVEMENTS':'CONQUISTAS','HIGH SCORES':'RECORDES','MISSIONS':'MISSÕES','TRAINING':'TREINO','BACK':'VOLTAR','DIFFICULTY':'DIFICULDADE','EASY':'FÁCIL','NORMAL':'NORMAL','HARD':'DIFÍCIL','SCORE':'PONTOS','WAVE':'ONDA','PAUSED':'PAUSADO','RESUME':'CONTINUAR','RESTART':'REINICIAR','MENU':'MENU','GAME OVER':'FIM DE JOGO','PLAY AGAIN':'JOGAR NOVAMENTE','BACK TO MENU':'VOLTAR AO MENU','FINAL SCORE':'PONTUAÇÃO FINAL','MOTHERSHIP':'NAVE-MÃE','Break the blockade. Defend the galaxy.':'Rompa o bloqueio. Defenda a galáxia.','HIGH SCORE':'RECORDE','SOUND: ON':'SOM: LIGADO','SOUND: OFF':'SOM: DESLIGADO'};
+  const words={'AUDIO':'ÁUDIO','PLAY':'JOGAR','HANGAR':'HANGAR','HOW TO PLAY':'COMO JOGAR','ACHIEVEMENTS':'CONQUISTAS','HIGH SCORES':'RECORDES','MISSIONS':'MISSÕES','TRAINING':'TREINO','BACK':'VOLTAR','DIFFICULTY':'DIFICULDADE','EASY':'FÁCIL','NORMAL':'NORMAL','HARD':'DIFÍCIL','SCORE':'PONTOS','WAVE':'ONDA','PAUSED':'PAUSADO','RESUME':'CONTINUAR','RESTART':'REINICIAR','MENU':'MENU','GAME OVER':'FIM DE JOGO','PLAY AGAIN':'JOGAR NOVAMENTE','BACK TO MENU':'VOLTAR AO MENU','FINAL SCORE':'PONTUAÇÃO FINAL','MOTHERSHIP':'NAVE-MÃE','Break the blockade. Defend the galaxy.':'Rompa o bloqueio. Defenda a galáxia.','HIGH SCORE':'RECORDE','SOUND: ON':'SOM: LIGADO','SOUND: OFF':'SOM: DESLIGADO'};
   Object.assign(words, {'PILOT HQ':'CENTRAL DO PILOTO','30 career milestones':'30 marcos de carreira','The battle is waiting for you.':'A batalha espera por você.','SIGNAL LOST':'SINAL PERDIDO','DESKTOP':'COMPUTADOR','MOBILE':'CELULAR','ENEMIES':'INIMIGOS','TEMPORARY POWER-UPS':'PODERES TEMPORÁRIOS','BOSSES':'CHEFES','The top five pilots on this browser.':'Os cinco melhores pilotos deste navegador.','The top 5 scores are saved in this browser.':'Os cinco melhores recordes são salvos neste navegador.'});
   const platinumKey='nsd33.platinum';
   let platinum={owned:['standard'],weapon:'standard',daily:'',runs:0,seconds:0,quality:'auto'};
@@ -90,13 +90,13 @@
   card(tr('Graphics','Gráficos'),platinum.quality==='low'?tr('Reduced effects','Efeitos reduzidos'):tr('Full effects','Efeitos completos'),tr('SWITCH','ALTERNAR'),()=>{platinum.quality=platinum.quality==='low'?'auto':'low';savePlatinum();pilotHQ();});translateUI();}
   $('platinumBtn').onclick=pilotHQ;$('platinumBack').onclick=()=>goMenu();
   const originals=new Map();
-  function translateUI(){document.documentElement.lang=premium.lang==='pt'?'pt-BR':'en';for(const el of document.querySelectorAll('button,h2,h3,option,.stat-label,.tagline,.best-badge span,.bossbar-label span,.final-score span,.screen-sub,.small-note,.kicker')){if(!originals.has(el)&&words[el.textContent.trim()])originals.set(el,el.textContent.trim());if(originals.has(el)&&!['soundBtn','pauseSoundBtn'].includes(el.id))el.textContent=tr(originals.get(el),words[originals.get(el)]);}$('langBtn').textContent=tr('PT-BR','EN');}
+  function translateUI(){document.documentElement.lang=premium.lang==='pt'?'pt-BR':'en';for(const el of document.querySelectorAll('button,h2,h3,option,[data-i18n],.stat-label,.tagline,.best-badge span,.bossbar-label span,.final-score span,.screen-sub,.small-note,.kicker')){if(!originals.has(el)&&words[el.textContent.trim()])originals.set(el,el.textContent.trim());if(originals.has(el)&&!['soundBtn','pauseSoundBtn'].includes(el.id))el.textContent=tr(originals.get(el),words[originals.get(el)]);}$('langBtn').textContent=tr('PT-BR','EN');}
   $('langBtn').onclick=()=>{premium.lang=tr('pt','en');savePremium();translateUI();updateSoundUI();};
   const missions=[['hunter','kills',50,35,'Destroy 50 enemies','Destrua 50 inimigos'],['boss','bosses',3,70,'Defeat 3 bosses','Derrote 3 chefes'],['frontier','wave',15,100,'Reach wave 15','Chegue à onda 15'],['elite','wave',30,180,'Reach wave 30','Chegue à onda 30']];
   function missionMenu(){state.mode='missions';showScreen($('missionScreen'));const list=$('missionList');list.replaceChildren();for(const [id,key,target,reward,en,pt] of missions){const d=document.createElement('div');d.className='info-card';const title=document.createElement('h3');title.textContent=tr(en,pt);const p=document.createElement('p');p.textContent=Math.min(progress[key],target)+' / '+target+' · '+reward+' CR';const b=document.createElement('button');b.className='btn btn-small';b.textContent=premium.claimed.includes(id)?tr('CLAIMED','RESGATADO'):tr('CLAIM','RESGATAR');b.disabled=progress[key]<target||premium.claimed.includes(id);b.onclick=()=>{if(b.disabled||premium.claimed.includes(id))return;premium.claimed.push(id);savePremium();earn(reward);missionMenu();};d.append(title,p,b);list.append(d);}translateUI();}
   $('missionBtn').onclick=missionMenu;$('missionBack').onclick=()=>goMenu();
   let abilityCooldown=0,training=false,trainingStep=0,trainingOrigin=null,trainingClock=0;
-  function pulse(){if(state.mode!=='playing'||!state.player||abilityCooldown>0||state.pendingOver>0)return;abilityCooldown=18;state.enemyBullets.length=0;for(const e of state.enemies)if(!e.dead)killEnemy(e);if(state.boss&&!state.boss.dead)damageBoss(state.boss,12+premium.levels[profile.selected]*4);addRing(state.player.x,state.player.y,'#70ffff',650,.65);Sound.explode();if(training&&trainingStep===2)trainingStep=3;}
+  function pulse(){if(state.mode!=='playing'||!state.player||abilityCooldown>0||state.pendingOver>0)return;abilityCooldown=18;state.enemyBullets.length=0;for(const e of state.enemies)if(!e.dead)killEnemy(e);if(state.boss&&!state.boss.dead)damageBoss(state.boss,12+premium.levels[profile.selected]*4);addRing(state.player.x,state.player.y,'#70ffff',650,.65);Sound.pulse();if(training&&trainingStep===2)trainingStep=3;}
   $('abilityBtn').onclick=pulse;
   $('trainingBtn').onclick=()=>{startGame();training=true;trainingStep=0;trainingClock=0;trainingOrigin={x:state.player.x,y:state.player.y};state.power.shield=999;};
   function premiumTick(dt){abilityCooldown=Math.max(0,abilityCooldown-dt);const b=$('abilityBtn');const label=abilityCooldown>0?tr('PULSE','PULSO')+' · '+Math.ceil(abilityCooldown)+'s':tr('PULSE · READY','PULSO · PRONTO');if(b.textContent!==label)b.textContent=label;b.disabled=abilityCooldown>0;const hint=$('trainingHint');hint.classList.toggle('hidden',!training);if(!training)return;trainingClock+=dt;if(trainingStep===0&&Math.hypot(state.player.x-trainingOrigin.x,state.player.y-trainingOrigin.y)>45)trainingStep=1;if(trainingStep===1&&state.bullets.length>0)trainingStep=2;if(trainingStep===3){training=false;state.power.shield=8;hint.classList.add('hidden');showBanner(tr('TRAINING COMPLETE','TREINO CONCLUÍDO'),tr('Keep fighting!','Continue lutando!'));return;}hint.textContent=[tr('1 · Move your ship','1 · Mova sua nave'),tr('2 · Fire (Space / touch)','2 · Atire (Espaço / toque)'),tr('3 · Activate PULSE (Q or button)','3 · Ative PULSO (Q ou botão)')][trainingStep];}
@@ -218,7 +218,13 @@
     });
   }
 
-  const audio = { ctx: null, master: null, muted: false, shotFlip: false };
+  const audioDefaults = {master:100,music:60,effects:85,alerts:75};
+  const audioKey = 'nsd_audio_mix_v1';
+  const mix = {...audioDefaults};
+  try {const saved=JSON.parse(localStorage.getItem(audioKey)||'{}');for(const k of Object.keys(mix))if(Number.isFinite(saved[k]))mix[k]=Math.max(0,Math.min(100,saved[k]));}catch(e){}
+  const audio = { ctx: null, master: null, muted: false, shotFlip: false, buses:{}, voices:0, noise:null };
+  function applyMix(){if(!audio.master)return;const t=audio.ctx.currentTime;audio.master.gain.setTargetAtTime(audio.muted?0:mix.master/100,t,.015);for(const k of ['music','effects','alerts'])audio.buses[k].gain.setTargetAtTime(mix[k]/100,t,.015);}
+  function saveMix(){try{localStorage.setItem(audioKey,JSON.stringify(mix));}catch(e){}applyMix();}
   try {
     audio.muted = localStorage.getItem(MUTE_KEY) === '1';
   } catch (error) {
@@ -232,8 +238,11 @@
       try {
         audio.ctx = new AudioCtor();
         audio.master = audio.ctx.createGain();
-        audio.master.gain.value = 0.5;
-        audio.master.connect(audio.ctx.destination);
+        audio.master.gain.value = audio.muted?0:mix.master/100;
+        const compressor=audio.ctx.createDynamicsCompressor();compressor.threshold.value=-12;compressor.knee.value=12;compressor.ratio.value=12;compressor.attack.value=.003;compressor.release.value=.12;
+        audio.master.connect(compressor);compressor.connect(audio.ctx.destination);
+        for(const k of ['music','effects','alerts']){const bus=audio.ctx.createGain();bus.gain.value=mix[k]/100;bus.connect(audio.master);audio.buses[k]=bus;}
+        audio.noise=audio.ctx.createBuffer(1,audio.ctx.sampleRate,audio.ctx.sampleRate);const samples=audio.noise.getChannelData(0);for(let i=0;i<samples.length;i++)samples[i]=Math.random()*2-1;
       } catch (error) {
         audio.ctx = null;
       }
@@ -244,8 +253,8 @@
   function tone(freq, duration, options = {}) {
     if (audio.muted) return;
     ensureAudio();
-    if (!audio.ctx || !audio.master) return;
-    const { type = 'square', volume = 0.05, slide = 0, delay = 0, endFreq = null } = options;
+    if (!audio.ctx || !audio.master || audio.voices>=48) return;
+    const { type = 'square', volume = 0.05, slide = 0, delay = 0, endFreq = null, bus = 'effects' } = options;
     const start = audio.ctx.currentTime + delay;
     const osc = audio.ctx.createOscillator();
     const gain = audio.ctx.createGain();
@@ -254,53 +263,40 @@
     const target = endFreq !== null ? endFreq : Math.max(20, freq + slide);
     if (target !== freq) osc.frequency.exponentialRampToValueAtTime(target, start + duration);
     gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume), start + 0.008);
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, Math.min(.42,volume*(bus==='music'?2.4:4.5))), start + 0.008);
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
     osc.connect(gain);
-    gain.connect(audio.master);
+    gain.connect(audio.buses[bus]);
+    audio.voices++;osc.onended=()=>{audio.voices--;osc.disconnect();gain.disconnect();};
     osc.start(start);
     osc.stop(start + duration + 0.03);
   }
 
-  function noiseBurst(duration, volume = 0.1, cutoff = 1400, delay = 0) {
-    if (audio.muted) return;
-    ensureAudio();
-    if (!audio.ctx || !audio.master) return;
-    const sampleRate = audio.ctx.sampleRate;
-    const length = Math.max(1, Math.floor(sampleRate * duration));
-    const buffer = audio.ctx.createBuffer(1, length, sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < length; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 1.7);
-    }
-    const source = audio.ctx.createBufferSource();
-    source.buffer = buffer;
-    const filter = audio.ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = cutoff;
-    const gain = audio.ctx.createGain();
-    gain.gain.value = volume;
-    source.connect(filter);
-    filter.connect(gain);
-    gain.connect(audio.master);
-    source.start(audio.ctx.currentTime + delay);
+  function noiseBurst(duration, volume = .1, cutoff = 1400, delay = 0, bus='effects') {
+    if(audio.muted)return;ensureAudio();if(!audio.ctx||!audio.noise||audio.voices>=48)return;
+    const t=audio.ctx.currentTime+delay, source=audio.ctx.createBufferSource(), filter=audio.ctx.createBiquadFilter(), gain=audio.ctx.createGain();
+    source.buffer=audio.noise;filter.type='lowpass';filter.frequency.value=cutoff;
+    gain.gain.setValueAtTime(Math.min(.55,volume*4),t);gain.gain.exponentialRampToValueAtTime(.0001,t+duration);
+    source.connect(filter);filter.connect(gain);gain.connect(audio.buses[bus]);audio.voices++;source.onended=()=>{audio.voices--;source.disconnect();filter.disconnect();gain.disconnect();};source.start(t,0,duration);
   }
 
   const Sound = {
     ui() { tone(620, 0.05, { type: 'square', volume: 0.028, slide: 180 }); },
     start() {
-      tone(220, 0.12, { type: 'sawtooth', volume: 0.04 });
-      tone(330, 0.14, { type: 'square', volume: 0.03, delay: 0.09 });
-      tone(660, 0.18, { type: 'triangle', volume: 0.04, delay: 0.18 });
+      tone(220, 0.12, { type: 'sawtooth', bus: 'alerts', volume: 0.04 });
+      tone(330, 0.14, { type: 'square', bus: 'alerts', volume: 0.03, delay: 0.09 });
+      tone(660, 0.18, { type: 'triangle', bus: 'alerts', volume: 0.04, delay: 0.18 });
     },
     waveStart() {
-      tone(330, 0.1, { type: 'square', volume: 0.03 });
-      tone(495, 0.14, { type: 'square', volume: 0.026, delay: 0.1 });
+      tone(330, 0.1, { type: 'square', bus: 'alerts', volume: 0.03 });
+      tone(495, 0.14, { type: 'square', bus: 'alerts', volume: 0.026, delay: 0.1 });
     },
-    shoot() {
-      audio.shotFlip = !audio.shotFlip;
-      tone(audio.shotFlip ? 1160 : 1000, 0.055, { type: 'square', volume: 0.018, endFreq: 560 });
+    shoot(weapon='standard') {
+      if(weapon==='rail'){tone(420,.14,{type:'sawtooth',volume:.065,endFreq:125});tone(1450,.055,{type:'triangle',volume:.035,endFreq:350});return;}
+      if(weapon==='storm'){[0,.025,.05].forEach((delay,i)=>tone(740+i*220,.065,{type:'square',volume:.025,endFreq:360,delay}));return;}
+      audio.shotFlip=!audio.shotFlip;tone(audio.shotFlip?1160:1000,.055,{type:'triangle',volume:.045,endFreq:560});
     },
+    pulse(){tone(180,.35,{type:'sine',volume:.085,endFreq:1200});tone(1200,.42,{type:'triangle',volume:.06,endFreq:180,delay:.12});noiseBurst(.28,.065,3200,.12);},
     enemyShoot() { tone(300, 0.08, { type: 'sawtooth', volume: 0.016, endFreq: 180 }); },
     hit() {
       noiseBurst(0.07, 0.045, 2600);
@@ -315,46 +311,46 @@
       tone(80, 0.55, { type: 'sawtooth', volume: 0.06, endFreq: 30 });
     },
     playerHit() {
-      noiseBurst(0.38, 0.16, 1300);
-      tone(220, 0.4, { type: 'sawtooth', volume: 0.07, endFreq: 55 });
+      noiseBurst(0.38, 0.16, 1300, 0, 'alerts');
+      tone(220, 0.4, { type: 'sawtooth', bus: 'alerts', volume: 0.07, endFreq: 55 });
     },
     shieldBreak() {
-      tone(740, 0.12, { type: 'triangle', volume: 0.05, endFreq: 240 });
-      noiseBurst(0.18, 0.06, 2800);
+      tone(740, 0.12, { type: 'triangle', bus: 'alerts', volume: 0.05, endFreq: 240 });
+      noiseBurst(0.18, 0.06, 2800, 0, 'alerts');
     },
     pickup() {
-      tone(523, 0.08, { type: 'square', volume: 0.035 });
-      tone(784, 0.09, { type: 'square', volume: 0.032, delay: 0.075 });
-      tone(1047, 0.14, { type: 'triangle', volume: 0.04, delay: 0.15 });
+      tone(523, 0.08, { type: 'square', bus: 'alerts', volume: 0.035 });
+      tone(784, 0.09, { type: 'square', bus: 'alerts', volume: 0.032, delay: 0.075 });
+      tone(1047, 0.14, { type: 'triangle', bus: 'alerts', volume: 0.04, delay: 0.15 });
     },
     waveClear() {
-      [440, 554, 659, 880].forEach((f, i) => tone(f, 0.12, { type: 'triangle', volume: 0.035, delay: i * 0.085 }));
+      [440, 554, 659, 880].forEach((f, i) => tone(f, 0.12, { type: 'triangle', bus: 'alerts', volume: 0.035, delay: i * 0.085 }));
     },
     alarm() {
       for (let i = 0; i < 3; i++) {
-        tone(180, 0.18, { type: 'sawtooth', volume: 0.04, delay: i * 0.36 });
-        tone(140, 0.18, { type: 'square', volume: 0.03, delay: i * 0.36 + 0.18 });
+        tone(180, 0.18, { type: 'sawtooth', bus: 'alerts', volume: 0.04, delay: i * 0.36 });
+        tone(140, 0.18, { type: 'square', bus: 'alerts', volume: 0.03, delay: i * 0.36 + 0.18 });
       }
     },
     bossSpawn() {
-      tone(70, 0.9, { type: 'sawtooth', volume: 0.06, endFreq: 120 });
-      noiseBurst(0.9, 0.07, 600);
+      tone(70, 0.9, { type: 'sawtooth', bus: 'alerts', volume: 0.06, endFreq: 120 });
+      noiseBurst(0.9, 0.07, 600, 0, 'alerts');
     },
-    bossCharge() { tone(130, 0.22, { type: 'square', volume: 0.025, endFreq: 520 }); },
+    bossCharge() { tone(130, 0.22, { type: 'square', bus: 'alerts', volume: 0.025, endFreq: 520 }); },
     bossShot() {
       tone(340, 0.16, { type: 'sawtooth', volume: 0.03, endFreq: 90 });
       noiseBurst(0.18, 0.05, 1800);
     },
     bossDown() {
       this.bigExplode();
-      [330, 262, 196].forEach((f, i) => tone(f, 0.35, { type: 'triangle', volume: 0.05, delay: 0.5 + i * 0.16 }));
+      [330, 262, 196].forEach((f, i) => tone(f, 0.35, { type: 'triangle', bus: 'alerts', volume: 0.05, delay: 0.5 + i * 0.16 }));
     },
     gameOver() {
-      [392, 330, 262, 196].forEach((f, i) => tone(f, 0.28, { type: 'triangle', volume: 0.045, delay: i * 0.18 }));
-      noiseBurst(0.5, 0.05, 700, 0.3);
+      [392, 330, 262, 196].forEach((f, i) => tone(f, 0.28, { type: 'triangle', bus: 'alerts', volume: 0.045, delay: i * 0.18 }));
+      noiseBurst(0.5, 0.05, 700, 0.3, 'alerts');
     },
     record() {
-      [880, 1108, 1318, 1760].forEach((f, i) => tone(f, 0.12, { type: 'square', volume: 0.03, delay: i * 0.08 }));
+      [880, 1108, 1318, 1760].forEach((f, i) => tone(f, 0.12, { type: 'square', bus: 'alerts', volume: 0.03, delay: i * 0.08 }));
     }
   };
 
@@ -369,6 +365,7 @@
 
   function setMuted(muted, withSound = false) {
     audio.muted = muted;
+    applyMix();
     try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch (error) { /* sem storage */ }
     updateSoundUI();
     if (!muted) {
@@ -1035,7 +1032,7 @@
         });
       }
     }
-    Sound.shoot();
+    Sound.shoot(platinum.weapon);
   }
 
   function updatePlayer(dt) {
@@ -1470,7 +1467,7 @@
     if(!training){platinum.seconds+=dt;if(Math.floor(platinum.seconds)%10===0&&Math.floor(platinum.seconds)!==lastSavedSecond){lastSavedSecond=Math.floor(platinum.seconds);savePlatinum();}}
     premiumTick(dt);
     comboTime-=dt;if(comboTime<=0)combo=0;updateRunStats();
-    musicClock-=dt;if(musicClock<=0){musicClock=state.boss?.22:.32;const notes=state.boss?[82.41,82.41,123.47,98,82.41,146.83,123.47,98]:[110,110,165,130.81,110,196,165,130.81];tone(notes[musicStep++%notes.length],0.19,{type:'triangle',volume:0.018});}
+    musicClock-=dt;if(musicClock<=0){musicClock=state.boss?.22:.32;const notes=state.boss?[82.41,82.41,123.47,98,82.41,146.83,123.47,98]:[110,110,165,130.81,110,196,165,130.81];const note=notes[musicStep++%notes.length];tone(note*2,.19,{type:'triangle',volume:.024,bus:'music'});tone(note*4,.12,{type:'sine',volume:.012,bus:'music'});}
 
     if (state.bannerTimer > 0) {
       state.bannerTimer -= dt;
@@ -1777,9 +1774,10 @@
 
   let lastSavedSecond=-1;
   let drag = null;
-  let lastTime = 0;
+  let lastTime = 0, fpsValue=0, frames=0, fpsStart=0;
 
   function frame(timestamp) {
+    if (!fpsStart) fpsStart=timestamp; frames++; if(timestamp-fpsStart>=1000){fpsValue=Math.round(frames*1000/(timestamp-fpsStart));frames=0;fpsStart=timestamp; $('fpsReadout').textContent=fpsValue+' FPS';}
     if (!lastTime) lastTime = timestamp;
     let dt = (timestamp - lastTime) / 1000;
     lastTime = timestamp;
@@ -1791,7 +1789,7 @@
     } else if (state.mode === 'menu' || state.mode === 'howto' || state.mode === 'records') {
       state.menuTime += dt;
     }
-    if(state.particles.length>600)state.particles.splice(0,state.particles.length-600);
+    if(state.particles.length>(platinum.quality==='low'?150:600))state.particles.splice(0,state.particles.length-(platinum.quality==='low'?150:600));
     updateStars(dt);
     render(dt);
     requestAnimationFrame(frame);
@@ -1828,11 +1826,23 @@
     startGame();
   });
   dom.gameoverMenuBtn.addEventListener('click', () => { Sound.ui(); goMenu(); });
+
+  const audioDialog=$('audioDialog');
+  function openAudioPanel(){ensureAudio();$('audioTitle').textContent=tr('Audio settings','Configurações de áudio');$('audioClose').textContent=tr('Close','Fechar');$('audioReset').textContent=tr('Restore defaults','Restaurar padrão');$('audioMute').textContent=audio.muted?tr('Enable sound','Ativar som'):tr('Mute sound','Silenciar');
+    const labels={master:tr('Master volume','Volume geral'),music:tr('Music','Música'),effects:tr('Sound effects','Efeitos sonoros'),alerts:tr('Combat alerts','Alertas de combate')};
+    for(const k of Object.keys(mix)){$('label-'+k).textContent=labels[k];$('mix-'+k).value=mix[k];$('value-'+k).textContent=mix[k]+'%';}audioDialog.showModal();}
+  for(const k of Object.keys(mix))$('mix-'+k).addEventListener('input',e=>{mix[k]=Number(e.target.value);$('value-'+k).textContent=mix[k]+'%';saveMix();});
+  $('audioReset').onclick=()=>{Object.assign(mix,audioDefaults);saveMix();for(const k of Object.keys(mix)){$('mix-'+k).value=mix[k];$('value-'+k).textContent=mix[k]+'%';}};
+  $('audioMute').onclick=()=>{toggleMute();$('audioMute').textContent=audio.muted?tr('Enable sound','Ativar som'):tr('Mute sound','Silenciar');};
+  $('audioClose').onclick=()=>audioDialog.close();
+  for(const b of document.querySelectorAll('[data-sound-test]'))b.onclick=()=>{const k=b.dataset.soundTest;if(['standard','rail','storm'].includes(k))Sound.shoot(k);else if(k==='music'){[220,330,440].forEach((f,i)=>tone(f,.2,{type:'triangle',volume:.035,bus:'music',delay:i*.18}));}else Sound[k]();};
+  $('audioMenuBtn').onclick=openAudioPanel;$('audioPauseBtn').onclick=openAudioPanel;
   dom.soundBtn.addEventListener('click', toggleMute);
   dom.pauseSoundBtn.addEventListener('click', toggleMute);
   dom.hudSoundBtn.addEventListener('click', toggleMute);
 
   window.addEventListener('keydown', (event) => {
+    if ($('audioDialog').open) return;
     const code = event.code;
     if (code === 'Escape') {
       if (state.mode === 'playing') {
@@ -1957,82 +1967,7 @@
 
   window.addEventListener('pagehide',()=>{savePlatinum();saveProfile();savePremium();saveProgress();window.NSDPlatform?.stop();});
   translateUI();
-  window.NSD = {
-    version: '3.3.0',
-    get snapshot() { return snapshot(); },
-    start: startGame,
-    pause: pauseGame,
-    resume: resumeGame,
-    toMenu: goMenu,
-    ...(location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? { _debug: {
-      gotoWave(n) {
-        if (state.mode !== 'playing') return false;
-        startWave(clamp(Number(n) || 1, 1, 999));
-        return true;
-      },
-      skipWave() {
-        if (state.mode !== 'playing' || !state.waveInfo || state.waveInfo.bossPending) return false;
-        state.enemies.length = 0;
-        state.waveInfo.spawnQueue = [];
-        state.waveInfo.spawnTimer = 0;
-        return true;
-      },
-      hurt() {
-        if (!state.player) return false;
-        state.player.invuln = 0;
-        hitPlayer();
-        return state.lives;
-      },
-      addPoints(n) {
-        if (state.mode !== 'playing') return false;
-        addPoints(Number(n) || 0);
-        return state.score;
-      },
-      give(type) {
-        if (!state.player || !powerMeta[type]) return false;
-        applyPickup(type);
-        return true;
-      },
-      setPlayer(x, y) {
-        if (!state.player) return false;
-        state.player.x = clamp(Number(x), 17, W - 17);
-        state.player.y = clamp(Number(y), 82, H - 32);
-        return true;
-      },
-      setLives(n) {
-        state.lives = clamp(Number(n) || 0, 1, 3);
-        updateLivesHUD(true);
-        return state.lives;
-      },
-      killBoss() {
-        if (!state.boss) return false;
-        damageBoss(state.boss, 99999);
-        return true;
-      },
-      spawnPickup(type) {
-        if (!powerMeta[type] || !state.player) return false;
-        spawnPickup(type, state.player.x, state.player.y - 80);
-        return true;
-      },
-      end(score) {
-        if (state.mode !== 'playing') return false;
-        state.pendingOver = 0;
-        if (Number.isFinite(Number(score)) && score !== undefined && score !== null && score !== '') {
-          state.score = Math.max(0, Math.floor(Number(score)));
-          updateScoreHUD(true);
-        }
-        endGame();
-        return true;
-      },
-      clearRecords() {
-        writeRecords([]);
-        refreshMenuBest();
-        renderRecords();
-        return true;
-      }
-    }} : {})
-  };
-
+  window.NSD = {version:'3.3.2',get fps(){return fpsValue;}};
   updateSoundUI();
   refreshMenuBest();
   renderRecords();

@@ -35,7 +35,7 @@
           </div>
         </div>
 
-        <button id="abilityBtn" class="btn btn-small ability">PULSE · READY</button><div id="trainingHint" class="training-hint hidden"></div><div id="runStats" class="run-stats"></div>
+        <button id="abilityBtn" class="btn btn-small ability">PULSE · READY</button><div id="trainingHint" class="training-hint hidden"></div><span id="fpsReadout" class="fps-readout"></span><div id="runStats" class="run-stats"></div>
         <div class="powerups" id="powerups" aria-live="polite"></div>
 
         <div class="bossbar hidden" id="bossbar">
@@ -66,7 +66,7 @@
             <strong id="menuBest">000000</strong>
           </div>
           <nav class="menu-actions" aria-label="Main menu">
-            <label class="difficulty-label">DIFFICULTY <select id="difficulty"><option value="0.8">EASY</option><option value="1" selected>NORMAL</option><option value="1.25">HARD</option></select></label><button class="btn btn-primary" id="playBtn" type="button">PLAY</button>
+            <label class="difficulty-label"><span data-i18n>DIFFICULTY</span> <select id="difficulty"><option value="0.8">EASY</option><option value="1" selected>NORMAL</option><option value="1.25">HARD</option></select></label><button class="btn btn-primary" id="playBtn" type="button">PLAY</button>
             <button class="btn" id="missionBtn">MISSIONS</button><button class="btn" id="trainingBtn">TRAINING</button><button class="btn" id="hangarBtn" type="button">HANGAR</button>
             <button class="btn" id="howtoBtn" type="button">HOW TO PLAY</button>
             <button class="btn" id="achBtn" type="button">ACHIEVEMENTS</button><button class="btn" id="recordsBtn" type="button">HIGH SCORES</button>
@@ -75,7 +75,7 @@
 
         <div class="menu-footer">
           <button class="btn btn-ghost btn-small" id="soundBtn" type="button">SOUND: ON</button>
-          <button class="btn btn-small" id="platinumBtn">PILOT HQ</button><button class="btn btn-small" id="langBtn">PT-BR</button><span class="version">v3.3 · PLATINUM EDITION</span>
+          <button class="btn btn-small" id="audioMenuBtn" type="button">AUDIO</button><button class="btn btn-small" id="platinumBtn">PILOT HQ</button><button class="btn btn-small" id="langBtn">PT-BR</button><span class="version">v3.3.2 · AUDIO ENHANCEMENT</span>
         </div>
       </section>
 
@@ -139,7 +139,7 @@
           <button class="btn btn-primary" id="resumeBtn" type="button">RESUME</button>
           <button class="btn" id="restartBtn" type="button">RESTART</button>
           <button class="btn" id="pauseSoundBtn" type="button">SOUND: ON</button>
-          <button class="btn btn-ghost" id="pauseMenuBtn" type="button">MENU</button>
+          <button class="btn" id="audioPauseBtn" type="button">AUDIO</button><button class="btn btn-ghost" id="pauseMenuBtn" type="button">MENU</button>
         </div>
       </section>
 
@@ -158,7 +158,7 @@
       </section>
     </main>
   </div>
-  <section hidden></section>
+<dialog id="audioDialog"><h2 id="audioTitle">Audio settings</h2><label for="mix-master"><span id="label-master">master</span> <output id="value-master"></output></label><input type="range" min="0" max="100" step="1" id="mix-master"><label for="mix-music"><span id="label-music">music</span> <output id="value-music"></output></label><input type="range" min="0" max="100" step="1" id="mix-music"><label for="mix-effects"><span id="label-effects">effects</span> <output id="value-effects"></output></label><input type="range" min="0" max="100" step="1" id="mix-effects"><label for="mix-alerts"><span id="label-alerts">alerts</span> <output id="value-alerts"></output></label><input type="range" min="0" max="100" step="1" id="mix-alerts"><div class="audio-tests"><button type="button" class="btn btn-small" data-sound-test="standard">Laser</button><button type="button" class="btn btn-small" data-sound-test="rail">Rail</button><button type="button" class="btn btn-small" data-sound-test="storm">Storm</button><button type="button" class="btn btn-small" data-sound-test="pulse">Pulse</button><button type="button" class="btn btn-small" data-sound-test="explode">Explosion</button><button type="button" class="btn btn-small" data-sound-test="bigExplode">Boss explosion</button><button type="button" class="btn btn-small" data-sound-test="playerHit">Damage</button><button type="button" class="btn btn-small" data-sound-test="waveStart">Wave</button><button type="button" class="btn btn-small" data-sound-test="alarm">Alarm</button><button type="button" class="btn btn-small" data-sound-test="music">Music</button></div><button class="btn" id="audioMute">Mute sound</button><button class="btn" id="audioReset">Restore defaults</button><button class="btn btn-primary" id="audioClose">Close</button></dialog>
   <script src="crazy-adapter.js"></script>
   <script src="script.js"></script>
 </body>
